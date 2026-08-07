@@ -1,1 +1,1 @@
-# decentworks-hexdigest-support
+# Decentworks::Hexdigest::Support
