@@ -1,0 +1,16 @@
+class ::Object
+  def to_md5_hexdigest: -> ::String
+  def to_rmd160_hexdigest: -> ::String
+  def to_sha1_hexdigest: -> ::String
+  def to_sha256_hexdigest: -> ::String
+  def to_sha384_hexdigest: -> ::String
+  def to_sha512_hexdigest: -> ::String
+
+  def to_md_hexdigest: -> ::String
+  def to_rmd_hexdigest: -> ::String
+  def to_sha_hexdigest: -> ::String
+
+  def to_hexdigest: -> ::String
+
+  def to_hexdigest_source: -> ::String
+end

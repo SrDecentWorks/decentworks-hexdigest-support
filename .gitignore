@@ -21,6 +21,8 @@
 .gem/credentials
 /.gem_rbs_collection/
 
+decentworks-hexdigest-support-*.*.*.gem
+
 /.yardoc
 /_yardoc/
 /doc/

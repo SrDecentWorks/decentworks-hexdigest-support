@@ -1,0 +1,5 @@
+module Decentworks
+  module HexdigestSupport
+    VERSION: String
+  end
+end

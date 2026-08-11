@@ -1,9 +1,15 @@
 # frozen_string_literal: true
 
+require "active_support"
+require "active_support/core_ext"
+require "active_support/time"
+
 require "faker"
 
 require "simplecov"
 SimpleCov.start
+
+require "decentworks/hexdigest_support"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -14,5 +20,12 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before do
+    ::Time.zone = "Asia/Tokyo"
+  end
+
+  config.after do
   end
 end
