@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe ::Hash do
+RSpec.describe ::Range do
   describe "#to_hexdigest_source" do
     subject { instance.to_hexdigest_source }
 
