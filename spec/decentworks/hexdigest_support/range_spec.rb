@@ -20,5 +20,11 @@ RSpec.describe ::Range do
 
       it { is_expected.to eq({ first:, last:, exclude_end: true }.to_hexdigest_source) }
     end
+
+    context "端点の型だけが異なる場合" do
+      it "数値の範囲と文字列の範囲は異なる値になる" do
+        expect((1..3).to_hexdigest_source).not_to eq ("1".."3").to_hexdigest_source
+      end
+    end
   end
 end
