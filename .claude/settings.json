@@ -1,0 +1,67 @@
+{
+  "$comment": "リポジトリの .claude/settings.json に置く（コミットしてチームで共有する）",
+
+  "permissions": {
+    "defaultMode": "default",
+
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)"
+    ],
+
+    "ask": [
+      "Bash(git push*)",
+      "Bash(git commit*)",
+      "Bash(bundle add*)",
+      "Bash(bundle update*)",
+      "Bash(gh pr *)",
+      "Edit(./Gemfile)",
+
+      "Bash(gem push*)",
+      "Bash(rake release*)"
+    ],
+
+    "allow": [
+      "Bash(bundle exec rspec*)",
+      "Bash(bundle exec rubocop*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git switch*)",
+      "Bash(git stash*)",
+      "Bash(bundle install)",
+      "Bash(bin/setup*)"
+    ]
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "$comment": "Rubyファイルを編集/新規作成したら即rubocop -a。ifはツールごとに1つしかマッチしないためEdit/Writeで別ハンドラに分けている。--serverで起動コストを抑える",
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(**/*.rb)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/rubocop-fix.sh",
+            "args": [],
+            "timeout": 60,
+            "statusMessage": "RuboCop 実行中"
+          },
+          {
+            "type": "command",
+            "if": "Write(**/*.rb)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/rubocop-fix.sh",
+            "args": [],
+            "timeout": 60,
+            "statusMessage": "RuboCop 実行中"
+          }
+        ]
+      }
+    ]
+  }
+}

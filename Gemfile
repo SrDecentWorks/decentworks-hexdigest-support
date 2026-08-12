@@ -18,7 +18,6 @@ gem "rubocop-rails-omakase", "~> 1.1"
 
 # RSpec
 gem "rspec", "~> 3.0"
-gem "rspec-rails", "~> 8.0"
 
 # Coverage
 gem "simplecov", "~> 1.0.3"

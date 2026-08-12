@@ -1,0 +1,5 @@
+- RuboCop の設定に従う
+- [@.rubocop.yml](.rubocop.yml)を勝手に緩めない
+- N+1 は許容しない。関連を辿るときは includes / preload を明示する
+- strong parameters は expect を使う
+- コメントは「なぜ」だけ書く。処理の言い換えコメントは書かない
