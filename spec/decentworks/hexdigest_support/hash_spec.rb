@@ -26,9 +26,11 @@ RSpec.describe ::Hash do
         end
       end
       let(:instance) { { key_class.new("k") => "v" } }
+      # instance とは別インスタンスの等価なハッシュ（キーのオブジェクトも別物）
+      let(:equivalent) { { key_class.new("k") => "v" } }
 
       it "毎回同じ値になる（キーのオブジェクトIDに依存しない）" do
-        expect(instance.to_hexdigest_source).to eq instance.to_hexdigest_source
+        expect(instance.to_hexdigest_source).to eq equivalent.to_hexdigest_source
       end
 
       it { is_expected.to eq '{Object:"k"=>String:"v"}' }
