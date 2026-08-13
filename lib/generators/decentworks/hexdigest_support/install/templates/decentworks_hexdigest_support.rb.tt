@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+# ハッシュ値化の設定
+#
+# MEMO: ソルトはダイジェストの入力へ前置される。ソルトを変更すると同じ値でも
+#       異なるダイジェストになるため、永続化済みのダイジェストがある場合は
+#       変更前に移行方針を検討すること
+#
+# MEMO: ソルトはリポジトリに平文で置かず、credentialsで管理する。
+#       `bin/rails credentials:edit` で以下のように登録する
+#
+#         decentworks:
+#           <%= salt_key %>: <ランダムな文字列（例: `bin/rails secret` の出力）>
+::Decentworks::HexdigestSupport.configure do |config|
+  config.salt = ::Rails.application.credentials.dig(:decentworks, :<%= salt_key %>)
+end
