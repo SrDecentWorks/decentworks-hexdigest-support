@@ -2,24 +2,26 @@
 
 require "digest"
 
+require_relative "configuration"
+
 class Object
   # MD5でハッシュ値化（16進数）
-  def to_md5_hexdigest = ::Digest::MD5.hexdigest(to_hexdigest_input)
+  def to_md5_hexdigest = ::Digest::MD5.hexdigest(to_salted_hexdigest_input)
 
   # RMD160でハッシュ値化（16進数）
-  def to_rmd160_hexdigest = ::Digest::RMD160.hexdigest(to_hexdigest_input)
+  def to_rmd160_hexdigest = ::Digest::RMD160.hexdigest(to_salted_hexdigest_input)
 
   # SHA1でハッシュ値化（16進数）
-  def to_sha1_hexdigest = ::Digest::SHA1.hexdigest(to_hexdigest_input)
+  def to_sha1_hexdigest = ::Digest::SHA1.hexdigest(to_salted_hexdigest_input)
 
   # SHA256でハッシュ値化（16進数）
-  def to_sha256_hexdigest = ::Digest::SHA256.hexdigest(to_hexdigest_input)
+  def to_sha256_hexdigest = ::Digest::SHA256.hexdigest(to_salted_hexdigest_input)
 
   # SHA384でハッシュ値化（16進数）
-  def to_sha384_hexdigest = ::Digest::SHA384.hexdigest(to_hexdigest_input)
+  def to_sha384_hexdigest = ::Digest::SHA384.hexdigest(to_salted_hexdigest_input)
 
   # SHA512でハッシュ値化（16進数）
-  def to_sha512_hexdigest = ::Digest::SHA512.hexdigest(to_hexdigest_input)
+  def to_sha512_hexdigest = ::Digest::SHA512.hexdigest(to_salted_hexdigest_input)
 
   # MD系のデフォルトアルゴリズム
   alias_method :to_md_hexdigest, :to_md5_hexdigest
@@ -32,6 +34,13 @@ class Object
 
   # ハッシュ値化のデフォルトアルゴリズム
   alias_method :to_hexdigest, :to_sha_hexdigest
+
+  # ソルトを前置したハッシュ値化の入力
+  #
+  # MEMO: ソルトはダイジェストを求める直前に一度だけ前置する。#to_hexdigest_inputに
+  #       含めてしまうと、配列やハッシュの要素ごとに再帰的にソルトが混入し、
+  #       構造によってソルトの出現回数が変わってしまう
+  def to_salted_hexdigest_input = "#{::Decentworks::HexdigestSupport.salt}#{to_hexdigest_input}"
 
   # ハッシュ値化の入力（型 + 値）
   #
