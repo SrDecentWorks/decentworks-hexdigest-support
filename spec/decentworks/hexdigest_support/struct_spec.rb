@@ -4,7 +4,17 @@ require "spec_helper"
 
 RSpec.describe ::Struct do
   # 名前を持つStruct（無名Structとの差を確認するため定数へ代入する）
-  let(:point_class) { stub_const("Point", ::Struct.new(:x, :y)) }
+  let(:point_class) { stub_const("Point", described_class.new(:x, :y)) }
+
+  describe "#to_hexdigest_type" do
+    it "定数へ代入されたStructは定数名になる" do
+      expect(point_class.new(1, 2).to_hexdigest_type).to eq "Point"
+    end
+
+    it "無名のStructはStructへ丸まる" do
+      expect(described_class.new(:x, :y).new(1, 2).to_hexdigest_type).to eq "Struct"
+    end
+  end
 
   describe "#to_hexdigest_source" do
     subject { instance.to_hexdigest_source }
@@ -15,24 +25,35 @@ RSpec.describe ::Struct do
       it { is_expected.to eq '{Symbol:"x"=>Integer:"1",Symbol:"y"=>String:"a"}' }
     end
 
-    context "メンバーがnilの場合" do
-      let(:instance) { point_class.new(1, nil) }
+    context "メンバーが未設定の場合" do
+      let(:instance) { point_class.new(1) }
 
-      it { is_expected.to eq '{Symbol:"x"=>Integer:"1",Symbol:"y"=>NilClass:"nil"}' }
+      it "未設定のメンバーはnilとして含まれる" do
+        is_expected.to eq '{Symbol:"x"=>Integer:"1",Symbol:"y"=>NilClass:"nil"}'
+      end
     end
 
     context "keyword_initのStructの場合" do
-      let(:instance) { ::Struct.new(:x, :y, keyword_init: true).new(x: 1, y: "a") }
+      let(:instance) { described_class.new(:x, :y, keyword_init: true).new(x: 1, y: "a") }
 
       it "位置引数のStructと同じ値になる" do
-        expect(instance.to_hexdigest_source).to eq ::Struct.new(:x, :y).new(1, "a").to_hexdigest_source
+        is_expected.to eq described_class.new(:x, :y).new(1, "a").to_hexdigest_source
+      end
+    end
+
+    context "メンバーに構造を持つ場合" do
+      let(:instance) { point_class.new([1, 2], { a: 1 }) }
+
+      it "メンバーも再帰的に正規化される" do
+        is_expected.to eq %q({Symbol:"x"=>Array:"[Integer:\"1\",Integer:\"2\"]",Symbol:"y"=>Hash:"{Symbol:\"a\"=>Integer:\"1\"}"})
       end
     end
 
     context "メンバー名だけが異なる場合" do
+      let(:instance) { described_class.new(:a, :b).new(1, 2) }
+
       it "値が同じでも異なる値になる" do
-        expect(::Struct.new(:a, :b).new(1, 2).to_hexdigest_source)
-          .not_to eq ::Struct.new(:x, :y).new(1, 2).to_hexdigest_source
+        is_expected.not_to eq described_class.new(:x, :y).new(1, 2).to_hexdigest_source
       end
     end
   end
@@ -53,14 +74,18 @@ RSpec.describe ::Struct do
     end
 
     it "名前を持つStructと無名のStructは異なるダイジェストになる" do
-      expect(instance.to_hexdigest).not_to eq ::Struct.new(:x, :y).new(1, "a").to_hexdigest
+      expect(instance.to_hexdigest).not_to eq described_class.new(:x, :y).new(1, "a").to_hexdigest
     end
 
     it "無名のStruct同士はメンバー名と値が同じなら同じダイジェストになる" do
       # rubocop:disable RSpec/IdenticalEqualityAssertion
-      expect(::Struct.new(:x, :y).new(1, "a").to_hexdigest)
-        .to eq ::Struct.new(:x, :y).new(1, "a").to_hexdigest
+      expect(described_class.new(:x, :y).new(1, "a").to_hexdigest)
+        .to eq described_class.new(:x, :y).new(1, "a").to_hexdigest
       # rubocop:enable RSpec/IdenticalEqualityAssertion
+    end
+
+    it "ハッシュの値に入れても同じ内容なら同じダイジェストになる" do
+      expect({ point: instance }.to_hexdigest).to eq({ point: point_class.new(1, "a") }.to_hexdigest)
     end
   end
 end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "object"
+
 class Array
   # ハッシュ値を求めるためのオリジナルの値
   #

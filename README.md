@@ -9,7 +9,7 @@
 
 - **型を保持する** — `:a` と `"a"`、`1` と `"1"` は異なるダイジェストになります
 - **順序に依存しない** — 配列・ハッシュは要素をソートしてから連結するため、並び順が違っても同じダイジェストになります
-- **Rubyのバージョンに依存しない** — `Hash#inspect` などネイティブの文字列表現には依存せず、自前で入力を組み立てます
+- **実行環境に依存しない** — `Hash#inspect` や `String#inspect` などネイティブの文字列表現には依存せず、自前で入力を組み立てます（Rubyのバージョンやロケールが変わってもダイジェストは変わりません）
 - **ソルトに対応** — 設定したソルトをダイジェストの入力へ前置します
 - **Railsの日時に対応** — `ActiveSupport::TimeWithZone` も `Time` と同じダイジェストになります
 
@@ -239,6 +239,24 @@ User.new(1, "user@example.com").to_hexdigest == User.new(1, "user@example.com").
 # => true
 ```
 
+`#to_s` も `#to_hexdigest_source` も実装していないオブジェクトは、既定の `Object#to_s` が返すオブジェクトIDが値になってしまいます。この場合は例外になります。
+
+```ruby
+Object.new.to_hexdigest
+# => Decentworks::HexdigestSupport::NonDeterministicSourceError
+
+# Procや無名クラスのように、独自の#to_sがオブジェクトIDを含む型も同様
+proc {}.to_hexdigest
+# => Decentworks::HexdigestSupport::NonDeterministicSourceError
+```
+
+配列やハッシュの中に含まれている場合も検出されます。
+
+```ruby
+{ user: Object.new }.to_hexdigest
+# => Decentworks::HexdigestSupport::NonDeterministicSourceError
+```
+
 ### 入力の確認
 
 デバッグ時は、ダイジェストの元になる文字列を確認できます。
@@ -265,9 +283,32 @@ User.new(1, "user@example.com").to_hexdigest == User.new(1, "user@example.com").
 
 ダイジェストは同一性の判定や値の秘匿を目的としたものです。パスワードの保存など、総当たり耐性が必要な用途には適していません（その用途にはbcryptなどのパスワードハッシュを使ってください）。
 
+### 値の引用とエスケープ
+
+値は引用符で囲まれ、引用符（`"`）とバックスラッシュ（`\`）だけがエスケープされます。`#inspect` は使いません。`#inspect` は非ASCII文字を `Encoding.default_external` が印字可能かどうかでエスケープするか決めるため、同じ値でもロケール次第でダイジェストが変わってしまうためです。
+
+```ruby
+# UTF-8環境の#inspectと同じ出力になる
+"あ".to_hexdigest_input # => "String:\"あ\""
+
+# 制御文字はエスケープせず、そのまま入力に含まれる
+"a\nb".to_hexdigest_input # => "String:\"a\nb\"" （#inspectなら "String:\"a\\nb\""）
+```
+
+> [!CAUTION]
+> 改行やタブなどの制御文字を含む値は、`#inspect` を使っていた頃とダイジェストが変わります。ASCIIのみで制御文字を含まない値、およびUTF-8環境で求めた非ASCIIの値のダイジェストは変わりません。
+
 ### コアクラスの拡張
 
 本gemは `Object` / `NilClass` / `Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` / `Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
+
+### ActiveSupportのコア拡張の読み込み
+
+`ActiveSupport::TimeWithZone` は ActiveSupport の autoload 経由でしか解決できないため、本gemは `require "active_support/time"` を無条件に実行します。これに伴い、`Time` / `Date` / `DateTime` / `Integer` / `Numeric` / `String` へのActiveSupportのコア拡張（`3.days` や `String#to_time` など）も読み込まれます。
+
+Railsであればいずれも読み込まれているものなので影響はありませんが、Rails以外で使う場合はこの副作用を考慮してください。
+
+なお、gem本体が依存するのは `activesupport` のみで、`railties` には依存しません（ジェネレータは `lib/generators` 配下に置かれ、Railsのジェネレータ探索から呼ばれた時にだけ読み込まれます）。
 
 ### 時刻の型の正規化
 

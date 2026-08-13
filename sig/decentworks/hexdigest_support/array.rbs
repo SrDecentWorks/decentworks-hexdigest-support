@@ -1,3 +1,3 @@
-class ::Array
+class ::Array[unchecked out Elem]
   def to_hexdigest_source: -> ::String
 end

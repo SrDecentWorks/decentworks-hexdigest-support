@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "hash"
+
 class Range
   # ハッシュ値を求めるためのオリジナルの値
   #

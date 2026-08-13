@@ -12,6 +12,7 @@ class ::Object
 
   def to_hexdigest: -> ::String
 
+  def to_salted_hexdigest_input: -> ::String
   def to_hexdigest_input: -> ::String
   def to_hexdigest_type: -> ::String
   def to_hexdigest_source: -> ::String

@@ -26,6 +26,9 @@ RSpec.configure do |config|
     ::Time.zone = "Asia/Tokyo"
   end
 
+  # MEMO: ソルトはすべてのダイジェストに効くため、設定が残ると他のファイルの期待値まで
+  #       巻き込んで落ちる。個別のafterに頼らず全体で戻す
   config.after do
+    ::Decentworks::HexdigestSupport.reset_configuration!
   end
 end

@@ -2,6 +2,7 @@
 
 require_relative "hexdigest_support/version"
 require_relative "hexdigest_support/configuration"
+require_relative "hexdigest_support/input"
 require_relative "hexdigest_support/object"
 require_relative "hexdigest_support/nil_class"
 require_relative "hexdigest_support/array"

@@ -1,0 +1,14 @@
+module Decentworks
+  module HexdigestSupport
+    class Configuration
+      attr_accessor salt: ::String?
+
+      def initialize: -> void
+    end
+
+    def self.configuration: -> ::Decentworks::HexdigestSupport::Configuration
+    def self.configure: { (::Decentworks::HexdigestSupport::Configuration) -> void } -> void
+    def self.reset_configuration!: -> nil
+    def self.salt: -> ::String
+  end
+end
