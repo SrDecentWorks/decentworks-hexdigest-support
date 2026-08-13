@@ -18,9 +18,9 @@ module Decentworks
         desc "config/initializers/decentworks_hexdigest_support.rb を生成する"
 
         class_option :salt_key,
-                     type: :string,
+                     type:    :string,
                      default: "hexdigest_support_salt",
-                     desc: "credentialsから読み出すキー名（decentworks配下）"
+                     desc:    "credentialsから読み出すキー名（decentworks配下）"
 
         def create_initializer_file
           template "decentworks_hexdigest_support.rb", "config/initializers/decentworks_hexdigest_support.rb"

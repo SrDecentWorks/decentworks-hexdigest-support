@@ -97,7 +97,10 @@ RSpec.describe ::Object do
 
     it "同じ内容の別インスタンスは同じダイジェストになる" do
       expect(+"a").not_to equal(+"a")
+
+      # rubocop:disable RSpec/IdenticalEqualityAssertion
       expect((+"a").to_hexdigest).to eq (+"a").to_hexdigest
+      # rubocop:enable RSpec/IdenticalEqualityAssertion
     end
 
     context "値の文字列表現が同じで型が異なる場合" do
@@ -140,7 +143,9 @@ RSpec.describe ::Object do
       end
 
       it "同じ値なら別インスタンスでも同じダイジェストになる（オブジェクトIDに依存しない）" do
+        # rubocop:disable RSpec/IdenticalEqualityAssertion
         expect(klass.new("k").to_hexdigest).to eq klass.new("k").to_hexdigest
+        # rubocop:enable RSpec/IdenticalEqualityAssertion
       end
 
       it "値が異なれば異なるダイジェストになる" do
@@ -270,7 +275,9 @@ RSpec.describe ::Object do
     it "同じソルトなら同じダイジェストになる" do
       ::Decentworks::HexdigestSupport.configure { |config| config.salt = "pepper" }
 
+      # rubocop:disable RSpec/IdenticalEqualityAssertion
       expect("a".to_hexdigest).to eq "a".to_hexdigest
+      # rubocop:enable RSpec/IdenticalEqualityAssertion
     end
 
     it "すべてのアルゴリズムにソルトが効く" do

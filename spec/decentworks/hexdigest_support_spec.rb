@@ -8,7 +8,10 @@ RSpec.describe ::Decentworks::HexdigestSupport do
     #       同じ実装が読み込まれることを担保する
     it "gem名でrequireできる" do
       expect { require "decentworks-hexdigest-support" }.not_to raise_error
+
+      # rubocop:disable RSpec/DescribedClass
       expect(defined?(::Decentworks::HexdigestSupport)).to eq "constant"
+      # rubocop:enable RSpec/DescribedClass
     end
   end
 

@@ -96,7 +96,9 @@ RSpec.describe ::Hash do
     end
 
     it "同じ内容なら別インスタンスでも同じダイジェストになる" do
+      # rubocop:disable RSpec/IdenticalEqualityAssertion
       expect({ a: { b: [1] } }.to_hexdigest).to eq({ a: { b: [1] } }.to_hexdigest)
+      # rubocop:enable RSpec/IdenticalEqualityAssertion
     end
   end
 end

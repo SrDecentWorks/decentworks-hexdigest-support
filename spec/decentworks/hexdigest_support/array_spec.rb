@@ -25,8 +25,8 @@ RSpec.describe ::Array do
     end
 
     context "要素の文字列表現に区切り文字（,）が含まれる場合" do
-      let(:first) { ["a,b", "c"] }
-      let(:second) { ["a", "b,c"] }
+      let(:first) { %w[a,b c] }
+      let(:second) { %w[a b,c] }
 
       it "内容が異なる配列は異なる値になる（衝突しない）" do
         expect(first.to_hexdigest_source).not_to eq second.to_hexdigest_source
@@ -76,7 +76,9 @@ RSpec.describe ::Array do
     end
 
     it "同じ内容なら別インスタンスでも同じダイジェストになる" do
+      # rubocop:disable RSpec/IdenticalEqualityAssertion
       expect([1, [2, { a: 3 }]].to_hexdigest).to eq [1, [2, { a: 3 }]].to_hexdigest
+      # rubocop:enable RSpec/IdenticalEqualityAssertion
     end
   end
 end
