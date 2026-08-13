@@ -72,5 +72,31 @@ RSpec.describe ::Hash do
         expect({ a: 1 }.to_hexdigest_source).not_to eq({ a: "1" }.to_hexdigest_source)
       end
     end
+
+    context "入れ子のハッシュの場合" do
+      let(:instance) { { a: { b: 1 } } }
+
+      it { is_expected.to eq %q({Symbol:"a"=>Hash:"{Symbol:\"b\"=>Integer:\"1\"}"}) }
+    end
+
+    context "配列を値に持つ場合" do
+      let(:instance) { { a: [1, 2] } }
+
+      it { is_expected.to eq %q({Symbol:"a"=>Array:"[Integer:\"1\",Integer:\"2\"]"}) }
+    end
+  end
+
+  describe "#to_hexdigest" do
+    it "キーの並び順が違っても同じダイジェストになる" do
+      expect({ a: 1, b: 2 }.to_hexdigest).to eq({ b: 2, a: 1 }.to_hexdigest)
+    end
+
+    it "ハッシュとキー・値の組の配列は異なるダイジェストになる（衝突しない）" do
+      expect({ a: 1 }.to_hexdigest).not_to eq [[:a, 1]].to_hexdigest
+    end
+
+    it "同じ内容なら別インスタンスでも同じダイジェストになる" do
+      expect({ a: { b: [1] } }.to_hexdigest).to eq({ a: { b: [1] } }.to_hexdigest)
+    end
   end
 end

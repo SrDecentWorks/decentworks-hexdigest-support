@@ -26,5 +26,31 @@ RSpec.describe ::Range do
         expect((1..3).to_hexdigest_source).not_to eq ("1".."3").to_hexdigest_source
       end
     end
+
+    context "端点を持たない範囲の場合" do
+      # MEMO: #firstは終端のみの範囲で、#lastは始端のみの範囲でRangeErrorになる。
+      #       現時点では端点を持たない範囲を非対応とし、その挙動をここで固定する
+      it "終端のみの範囲はRangeErrorになる" do
+        expect { (..3).to_hexdigest_source }.to raise_error ::RangeError
+      end
+
+      it "始端のみの範囲はRangeErrorになる" do
+        expect { (1..).to_hexdigest_source }.to raise_error ::RangeError
+      end
+    end
+  end
+
+  describe "#to_hexdigest" do
+    it "終端を含むかどうかで異なるダイジェストになる" do
+      expect((1..3).to_hexdigest).not_to eq (1...3).to_hexdigest
+    end
+
+    it "同じ内容の範囲は同じダイジェストになる" do
+      expect((1..3).to_hexdigest).to eq (1..3).to_hexdigest
+    end
+
+    it "同じ端点を持つハッシュとは異なるダイジェストになる（型で区別される）" do
+      expect((1..3).to_hexdigest).not_to eq({ first: 1, last: 3, exclude_end: false }.to_hexdigest)
+    end
   end
 end
