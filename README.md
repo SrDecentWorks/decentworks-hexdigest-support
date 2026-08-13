@@ -5,7 +5,7 @@
 
 任意のRubyオブジェクトから、決定的なハッシュ値（16進ダイジェスト）を求めるための拡張ライブラリです。
 
-`Object` にダイジェスト生成用のメソッドを追加し、`Array` / `Hash` / `Range` には構造を考慮した入力生成を実装しています。
+`Object` にダイジェスト生成用のメソッドを追加し、`Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` には構造を考慮した入力生成を、`Time` / `Date` / `DateTime` には正規化した入力生成を実装しています。
 
 - **型を保持する** — `:a` と `"a"`、`1` と `"1"` は異なるダイジェストになります
 - **順序に依存しない** — 配列・ハッシュは要素をソートしてから連結するため、並び順が違っても同じダイジェストになります
@@ -140,6 +140,61 @@ $ bin/rails generate decentworks:hexdigest_support:install --salt-key=custom_sal
 { id: 1, tags: %w[a b], range: (1..3) }.to_hexdigest
 ```
 
+### 構造体・集合
+
+`Struct` / `Data` はメンバー名と値の組で決まります。`Set` は配列と同じく要素をソートしてから連結します。
+
+```ruby
+Point = Struct.new(:x, :y)
+Point.new(1, 2).to_hexdigest_source # => '{Symbol:"x"=>Integer:"1",Symbol:"y"=>Integer:"2"}'
+
+Coord = Data.define(:x, :y)
+Coord.new(x: 1, y: 2).to_hexdigest
+
+# メンバー名が違えば値が同じでも異なるダイジェストになる
+Struct.new(:a, :b).new(1, 2).to_hexdigest == Struct.new(:x, :y).new(1, 2).to_hexdigest # => false
+
+Set[1, 2].to_hexdigest == Set[2, 1].to_hexdigest # => true
+
+# 同じ要素の配列とは異なるダイジェストになる（型で区別される）
+Set[1, 2].to_hexdigest == [1, 2].to_hexdigest # => false
+```
+
+> [!NOTE]
+> 定数へ代入していない無名の `Struct` / `Data` は型が `Struct` / `Data` へ丸まるため、メンバー名と値が同じであれば別々に生成したもの同士も同じダイジェストになります。型で区別したい場合は定数へ代入してください。
+
+### 日時
+
+`Time` / `DateTime` はUTCへ変換し、ナノ秒までの精度で正規化されます。タイムゾーンの違いはダイジェストに影響しません。
+
+```ruby
+Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest_source
+# => "2026-08-13T04:05:06.000000000Z"
+
+# 同じ瞬間を指す時刻は同じダイジェストになる
+Time.new(2026, 8, 13, 13, 5, 6, "+09:00").to_hexdigest == Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest # => true
+
+# Dateは日付として正規化される
+Date.new(2026, 8, 13).to_hexdigest_source # => "2026-08-13"
+```
+
+> [!NOTE]
+> ナノ秒より細かい精度は切り捨てられます。また `Time` と `DateTime` は型が異なるため、同じ瞬間を指していても異なるダイジェストになります。
+
+### nil・真偽値
+
+```ruby
+nil.to_hexdigest_input   # => "NilClass:\"nil\""
+true.to_hexdigest_input  # => "TrueClass:\"true\""
+false.to_hexdigest_input # => "FalseClass:\"false\""
+
+# 空文字とは区別される
+nil.to_hexdigest == "".to_hexdigest # => false
+
+# ハッシュの値がnilの場合も、キーそのものがない場合と区別される
+{ a: nil }.to_hexdigest == {}.to_hexdigest # => false
+```
+
 ### 独自クラスのダイジェスト
 
 既定では `#to_s` の結果が入力になります。値を明示したい場合は `#to_hexdigest_source` をオーバーライドします。型は `#to_hexdigest_input` が付与するため、オーバーライド側で型を意識する必要はありません。
@@ -192,7 +247,23 @@ User.new(1, "user@example.com").to_hexdigest == User.new(1, "user@example.com").
 
 ### コアクラスの拡張
 
-本gemは `Object` / `Array` / `Hash` / `Range` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
+本gemは `Object` / `NilClass` / `Array` / `Hash` / `Range` / `Struct` / `Data` / `Time` と、読み込まれていれば `Set` / `Date` / `DateTime` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
+
+### Set / Date / DateTime の読み込み順
+
+`Set` と `Date` は、利用側が使っていない場合にまで読み込みを強いないよう、**すでに読み込まれている場合にだけ**拡張します。本gemより後に `require "date"` した場合、拡張は適用されず `#to_s` にフォールバックします。
+
+`Date#to_s` はISO 8601の日付なので気付きにくいのですが、`DateTime#to_s` はオフセットを含むため、同じ瞬間でもタイムゾーン次第でダイジェストが変わってしまいます。読み込み順を制御できない場合は明示的に適用してください。
+
+```ruby
+require "date"
+::Decentworks::HexdigestSupport::OptionalExtensions.apply!
+```
+
+Railsでは `active_support` が先に読み込むため、通常は意識する必要はありません。
+
+> [!CAUTION]
+> `ActiveSupport::TimeWithZone` は本gemの対象外です。`Time` のサブクラスではないため `#to_s` にフォールバックし、オフセットを含んだ文字列がダイジェストの入力になります。Railsで日時を扱う場合は `#to_time` などで `Time` へ変換してから渡してください。
 
 ### 独自クラスのオーバーライド
 

@@ -212,7 +212,7 @@ RSpec.describe ::Object do
     context "nilの場合" do
       let(:instance) { nil }
 
-      it { is_expected.to eq 'NilClass:""' }
+      it { is_expected.to eq 'NilClass:"nil"' }
     end
 
     context "真偽値の場合" do
