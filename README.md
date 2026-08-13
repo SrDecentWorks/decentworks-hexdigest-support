@@ -283,7 +283,7 @@ class User
 end
 
 User.new(1, "user@example.com").to_hexdigest
-# => "85d21188e7c1940ec71ced3b22f141677c3665b5b77f0793a3181f38bff51515"
+# => "90a52738430094c7aee77ad317032d77dbc8ffa285bb0b5b9cf66d3d4b8727bf"
 
 # 値が同じなら同じダイジェストになる
 User.new(1, "user@example.com").to_hexdigest == User.new(1, "user@example.com").to_hexdigest
@@ -316,6 +316,92 @@ proc {}.to_hexdigest
 
 > [!NOTE]
 > 裏を返すと、利用側が自分でオブジェクトを文字列化して渡した場合（`"#{object}"` など）は検出できません。gemから見ればただの文字列であり、他の文字列と区別する手段がないためです。
+
+### 値オブジェクトのダイジェスト
+
+不変で、値そのものが同一性を決めるクラス（`Money` / `EmailAddress` / `Period` など）は、次の順で検討してください。
+
+**1. `Data.define` で足りるなら、それで足りる**
+
+属性がそのまま値になるだけなら、`Data` のサポートがそのまま効くため独自の実装は不要です。
+
+```ruby
+Money = ::Data.define(:amount, :currency)
+
+Money.new(amount: 100, currency: "JPY").to_hexdigest_input
+# => "Money:\"{Symbol:\\\"amount\\\"=>Numeric:\\\"100\\\",Symbol:\\\"currency\\\"=>String:\\\"JPY\\\"}\""
+```
+
+継承階層が既にある、`Data` の一部のメンバーはダイジェストへ含めたくない、といった場合に次へ進みます。
+
+**2. 値が 1 つなら `#to_s` で足りる**
+
+`#to_s` が値そのものを返すクラスは、既定の実装がそのまま使えます。型はクラス名から付与されるため、`#to_s` が同じでも別のクラス同士が衝突することはありません。
+
+```ruby
+class Currency
+  def initialize(code) = @code = code
+
+  def to_s = @code
+end
+
+Currency.new("JPY").to_hexdigest_input # => "Currency:\"JPY\""
+
+# 同じ文字列とは異なるダイジェストになる
+Currency.new("JPY").to_hexdigest == "JPY".to_hexdigest # => false
+```
+
+**3. 属性が複数あるなら、ハッシュへ委譲する**
+
+```ruby
+class EmailAddress
+  attr_reader :local, :domain
+
+  def initialize(local, domain)
+    @local  = local
+    @domain = domain
+  end
+
+  def to_hexdigest_source = { local:, domain: }.to_hexdigest_source
+end
+
+EmailAddress.new("user", "example.com").to_hexdigest_source
+# => "{Symbol:\"domain\"=>String:\"example.com\",Symbol:\"local\"=>String:\"user\"}"
+```
+
+`Hash#to_hexdigest_source` はキーでソートするため、ハッシュへ書く順序はダイジェストに影響しません。
+
+> [!IMPORTANT]
+> 委譲先は `#to_hexdigest_source` です。`#to_hexdigest_input` と書くと値に `Hash` という型が混ざり、ダイジェストは正常に求まるものの意図した値になりません。
+>
+> ```ruby
+> # 誤り: to_hexdigest_input へ委譲した場合
+> # => "EmailAddress:\"Hash:\\\"{...}\\\"\""
+> ```
+
+#### 属性を追加したときの挙動
+
+未設定の属性（`nil`）も値として含まれます。ハッシュの値が `nil` の場合とキーそのものがない場合を区別する扱いと同じです。
+
+```ruby
+class Period
+  attr_reader :from, :to
+
+  def initialize(from, to = nil)
+    @from = from
+    @to   = to
+  end
+
+  def to_hexdigest_source = { from:, to: }.to_hexdigest_source
+end
+
+Period.new(::Date.new(2026, 8, 13)).to_hexdigest_source
+# => "{Symbol:\"from\"=>Date:\"2026-08-13\",Symbol:\"to\"=>NilClass:\"nil\"}"
+```
+
+したがって、属性を追加して `#to_hexdigest_source` へ含めると、既存の値のダイジェストも変わります。永続化済みの値がある場合は移行方針が必要です（[独自クラスのオーバーライド](#独自クラスのオーバーライド)を参照）。
+
+`nil` の属性を除外すれば既存のダイジェストは保てますが、推奨しません。「値が `nil`」と「その属性を持たない」が同じダイジェストになるため、`Period` の例では終了日が未定であることと、`to` という属性が存在しなかった時点のデータが区別できなくなります。値オブジェクトでは `nil` 自体が意味を持つことが多く、失うものの方が大きくなります。
 
 ### 循環参照
 
@@ -423,7 +509,9 @@ Railsであればいずれも読み込まれているものなので影響はあ
 
 ### 独自クラスのオーバーライド
 
-`#to_hexdigest_source` の実装を変更すると、そのクラスのダイジェストも変わります。永続化済みの値がある場合は、ソルト変更と同様に移行方針が必要です。
+`#to_hexdigest_source` の実装を変更すると、そのクラスのダイジェストも変わります。永続化済みの値がある場合は、ソルト変更と同様に移行方針が必要です。属性の追加・削除も実装の変更にあたります（[値オブジェクトのダイジェスト](#値オブジェクトのダイジェスト)を参照）。
+
+クラス名を変更した場合も同様です。型はクラス名から付与されるため、リネームだけでダイジェストが変わります。
 
 無名クラスは名前を持つ祖先クラスまで遡って型として扱われます。
 
