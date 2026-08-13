@@ -1,8 +1,293 @@
+# rubocop-rails-omakase をベースにした設定。
+#
+# 【重要】omakase は Layout / Lint / Metrics / Naming / Style / Rails / Bundler /
+# Gemspec / Security の各部門を丸ごと `Enabled: false` にしたうえで、必要な cop だけを
+# 個別に有効化する設計になっている。
+# そのため、omakase が有効化していない cop に対して `EnforcedStyle` や `Max` だけを
+# 書いても cop は無効のままで何も起きない。有効にしたい場合は必ず `Enabled: true` を
+# 併記すること。
+#
+# omakase が有効化している cop 一覧:
+#   vendor/bundle/ruby/*/gems/rubocop-rails-omakase-*/rubocop.yml
+
+# rubocop-performance / rubocop-rails は omakase 側で読み込まれる。
+# rubocop-rspec はどこからも読み込まれないのでここで明示する。
+plugins:
+  - rubocop-rspec
+
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
+
 AllCops:
+  # gemspec の required_ruby_version からも解決できるが、明示しておく
   TargetRubyVersion: 4.0
+  SuggestExtensions: false
+  NewCops: enable
+  # 何のルールに引っかかったか表示する
+  DisplayCopNames: true
+  Exclude:
+    - 'bin/**/*'
+    - 'tmp/**/*'
+    # BUNDLE_PATH: vendor/bundle なので必須
+    - 'vendor/**/*'
+    - 'coverage/**/*'
 
+# #####################################################################################################################
+# omakase が有効化済みの cop に対する調整
+# #####################################################################################################################
+
+# omakase の Include は Rails 前提 (app/ config/ lib/ test/ Gemfile) で spec/ と
+# gemspec が漏れるため追加する。EnforcedStyle: double_quotes は omakase 側で指定済み。
 Style/StringLiterals:
-  EnforcedStyle: double_quotes
+  inherit_mode:
+    merge:
+      - Include
+  Include:
+    - 'spec/**/*'
+    - '*.gemspec'
 
-Style/StringLiteralsInInterpolation:
-  EnforcedStyle: double_quotes
+# ケツカンマは付けない (RuboCop / standardrb の既定に揃える)
+# Arguments / ArrayLiteral / HashLiteral の 3つは必ず同じ値にすること
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: no_comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: no_comma
+
+# spec 内は見た目が綺麗になるので許可
+Style/Semicolon:
+  Exclude:
+    - 'spec/**/*'
+
+# omakase は Rails 流の `[ a, b ]` (EnforcedStyle: space) を指定しているが、
+# gem では RuboCop 標準の `[a, b]` に揃える
+Layout/SpaceInsideArrayLiteralBrackets:
+  EnforcedStyle: no_space
+
+# #####################################################################################################################
+# omakase では無効な部門から、追加で有効化する cop
+# （ここに書いていない Style/Layout/Lint/Metrics/Naming の cop はすべて無効）
+# #####################################################################################################################
+
+# --- Lint ---
+
+# =- ではなく、-= と書く
+Lint/AmbiguousAssignment:
+  Enabled: true
+
+# カッコは付ける a || (b && c)
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: true
+
+# 非推奨の定数をチェックしたい
+Lint/DeprecatedConstants:
+  Enabled: true
+
+# gem として名前空間の衝突を避けたいので、曖昧になる定数参照は完全名で書く
+Lint/ConstantResolution:
+  Enabled: true
+  Only: [ Causing ]
+
+# RuntimeError は「特定の Error を定義できない場合」なので、
+# 定義できるエラーは RuntimeError ではなく StandardError を継承する
+Lint/InheritException:
+  Enabled: true
+  EnforcedStyle: standard_error
+
+# spec 内では expect { subject }.to change { foo } という書き方をよく行うので
+# () を省略したい。{ foo } は明らかに change に紐付く。
+Lint/AmbiguousBlockAssociation:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*_spec.rb'
+
+# --- Style ---
+
+# レキシカルスコープの扱いが alias_method の方が自然
+Style/Alias:
+  Enabled: true
+  EnforcedStyle: prefer_alias_method
+
+# lambda はすべて `->` リテラルで書く
+Style/Lambda:
+  Enabled: true
+  EnforcedStyle: literal
+
+# String#intern は ruby の内部表現すぎるので String#to_sym を使う
+Style/StringMethods:
+  Enabled: true
+
+# end.some_method とチェインするのはダサい
+Style/MethodCalledOnDoEndBlock:
+  Enabled: true
+
+# 無指定だと StandardError を rescue するのは常識の範疇なので
+Style/RescueStandardError:
+  Enabled: true
+  EnforcedStyle: implicit
+
+# fail と使い分ける必要ナシ
+Style/SignalException:
+  Enabled: true
+  EnforcedStyle: only_raise
+
+# 三項演算子は () を外さない方が条件式が何なのか読み取りやすい
+Style/TernaryParentheses:
+  Enabled: true
+  EnforcedStyle: require_parentheses_when_complex
+
+# ケツカンマは付けない (Array / Hash リテラルと揃える)
+# omakase は引数側の cop を有効化しないため Enabled: true が必要
+Style/TrailingCommaInArguments:
+  Enabled: true
+  EnforcedStyleForMultiline: no_comma
+
+# attr_xxx は可読性から並べて書きたい
+Style/AccessorGrouping:
+  Enabled: true
+  EnforcedStyle: separated
+
+# 1_000_000 と区切り文字が 1個以上必要になる場合のみ _ 区切りを必須にする
+Style/NumericLiterals:
+  Enabled: true
+  MinDigits: 4
+
+# --- Layout ---
+
+# 現代のディスプレイはそんなに狭くない
+Layout/LineLength:
+  Enabled: true
+  Max: 200
+
+# メソッドをグループ分けして書き順を揃えておくと読みやすくなる
+Layout/ClassStructure:
+  Enabled: true
+
+# ハッシュの並びは揃えたい
+Layout/HashAlignment:
+  Enabled: true
+  EnforcedHashRocketStyle: table
+  EnforcedColonStyle:      table
+
+# メソッドチェーン感がより感じられるインデントにする
+Layout/MultilineMethodCallIndentation:
+  Enabled: true
+  EnforcedStyle: indented_relative_to_receiver
+
+# ({ と hash を開始した場合に ( の位置にインデントさせる
+Layout/FirstArrayElementIndentation:
+  Enabled: true
+  EnforcedStyle: consistent
+
+# --- Naming ---
+
+# 番号系はスネークケース (xxx_1) で記載した方が可読性が上がる
+Naming/VariableNumber:
+  Enabled: true
+  EnforcedStyle: snake_case
+
+# --- Metrics ---
+# gem なので Rails アプリより厳しめでも回るが、まずは移植元の値を踏襲する
+
+Metrics/AbcSize:
+  Enabled: true
+  Max: 30
+
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 10
+
+# 分岐の数。ガード句を多用していると既定の 7 だと厳しい
+Metrics/PerceivedComplexity:
+  Enabled: true
+  Max: 10
+
+Metrics/MethodLength:
+  Enabled: true
+  CountComments: false
+  Max: 30
+
+Metrics/ClassLength:
+  Enabled: true
+  CountComments: false
+  Max: 300
+
+Metrics/ModuleLength:
+  Enabled: true
+  CountComments: false
+  Max: 300
+
+# spec と gemspec は巨大な block 不可避なので除外
+Metrics/BlockLength:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*.rb'
+    - '*.gemspec'
+
+# #####################################################################################################################
+# RSpec
+# （RSpec 部門は omakase の対象外なので既定で有効。設定はそのまま効く）
+# #####################################################################################################################
+
+# 日本語だと「〜の場合」になるので suffix でないと対応できない
+RSpec/ContextWording:
+  Enabled: false
+
+# it の中に複数の expect があることを許可する
+RSpec/MultipleExpectations:
+  Enabled: false
+
+# it が長くなることを許可する
+RSpec/ExampleLength:
+  Enabled: false
+
+# let の数の上限。割と大きくしていいかと
+RSpec/MultipleMemoizedHelpers:
+  Max: 20
+
+# ネストは 5 までは許容
+RSpec/NestedGroups:
+  Max: 5
+
+# it が一つしか無いような context では空行を開ける方が読みづらい
+RSpec/EmptyLineAfterFinalLet:
+  Enabled: false
+
+# block の方がテスト対象が目立ち、普段書く形と同じなので自然に読める
+RSpec/ExpectChange:
+  EnforcedStyle: block
+
+# one-liner の should は書きやすく意味も通るので撥ねる必要がない
+RSpec/ImplicitExpect:
+  Enabled: false
+
+# before の方が事前条件を整えていることが分かりやすい
+RSpec/InstanceVariable:
+  Enabled: false
+
+# ブロックの方が見た目がスッキリして見やすいので、どちらでもお好きにどうぞ
+RSpec/ReturnFromStub:
+  Enabled: false
+
+# どうしても使用しなければならない場面がある
+RSpec/AnyInstance:
+  Enabled: false
+
+# subject に名前をつけない方が読みやすい場面もある
+RSpec/NamedSubject:
+  Enabled: false
+
+# データ作成では並べて記述した方が可読性が上がる場合がある
+RSpec/LetSetup:
+  Enabled: false
+
+# spec を適度に分割したいためチェックはいらない
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/SpecFilePathSuffix:
+  Enabled: false
+
+# receive はまとめたくない
+RSpec/ReceiveMessages:
+  Enabled: false
