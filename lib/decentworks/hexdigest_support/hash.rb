@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
+require_relative "object"
+
 class Hash
   # ハッシュ値を求めるためのオリジナルの値
   #
-  # MEMO: キーも#to_hexdigest_inputで正規化する。キーをそのままにすると、
-  #       キーが#to_s/#inspectをオーバーライドしていないオブジェクトの場合、
-  #       オブジェクトIDに依存した非決定的な文字列が混入してしまう
+  # MEMO: キーも値と同じく#to_hexdigest_inputで正規化する。キーをそのまま文字列へ
+  #       埋めると、#to_sを実装していないオブジェクトがキーの場合にオブジェクトIDが
+  #       混入して非決定的になる。#to_hexdigest_input経由なら検出して例外になる
   #
   # MEMO: キー・値ともに#to_hexdigest_sourceではなく#to_hexdigest_inputを使う。
   #       値だけでは型が落ちるため、{ a: 1 } と { "a" => 1 }、

@@ -35,10 +35,20 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       )
     end
 
-    it "Array・Hash・Rangeが#to_hexdigest_sourceを独自に定義している" do
-      expect(::Array.instance_method(:to_hexdigest_source).owner).to eq ::Array
-      expect(::Hash.instance_method(:to_hexdigest_source).owner).to eq ::Hash
-      expect(::Range.instance_method(:to_hexdigest_source).owner).to eq ::Range
+    # MEMO: ownerを見るのは、Object#to_hexdigest_sourceへフォールバックしていないこと
+    #       （＝各型の実装が読み込まれていること）を確かめるため
+    it "各型が#to_hexdigest_sourceを独自に定義している" do
+      classes = [::NilClass, ::Array, ::Hash, ::Range, ::Struct, ::Data, ::Set, ::Date]
+
+      expect(classes.to_h { |klass| [klass, klass.instance_method(:to_hexdigest_source).owner] })
+        .to eq classes.to_h { |klass| [klass, klass] }
     end
+
+    # rubocop:disable RSpec/DescribedClass
+    it "時刻を表す型にTimeLikeがincludeされている" do
+      expect([::Time, ::DateTime, ::ActiveSupport::TimeWithZone])
+        .to all(satisfy { |klass| klass.include?(::Decentworks::HexdigestSupport::TimeLike) })
+    end
+    # rubocop:enable RSpec/DescribedClass
   end
 end

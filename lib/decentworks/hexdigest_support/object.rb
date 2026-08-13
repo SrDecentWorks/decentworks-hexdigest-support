@@ -3,6 +3,7 @@
 require "digest"
 
 require_relative "configuration"
+require_relative "input"
 
 class Object
   # MD5でハッシュ値化（16進数）
@@ -48,10 +49,19 @@ class Object
   #       型を添えないと :a と "a"、1 と "1" が同じ入力になり、内容の異なる
   #       オブジェクト同士が同じダイジェストになってしまう
   #
-  # MEMO: 値は#inspectで引用・エスケープする。引用しないと、値の文字列表現に
-  #       区切り文字（:）が含まれる場合に型名との境界が曖昧になる
-  #       （例: Foo::Barの"x" と Fooの":Bar:x" が衝突する）
-  def to_hexdigest_input = "#{to_hexdigest_type}:#{to_hexdigest_source.inspect}"
+  # MEMO: 引用・エスケープと決定性の検査はHexdigestSupport側へ切り出している。
+  #       #inspectに任せると実行環境のロケールで出力が変わるため
+  #       （詳細はinput.rbのMEMOを参照）
+  #
+  # MEMO: 検査を#to_hexdigest_sourceではなく本メソッドで行うのは、ここが
+  #       すべての値が通る唯一の経路であるため。オーバーライドされた
+  #       #to_hexdigest_sourceが返した値も同じように検査される
+  def to_hexdigest_input
+    source = to_hexdigest_source
+    ::Decentworks::HexdigestSupport.validate_source!(source, self)
+
+    "#{to_hexdigest_type}:#{::Decentworks::HexdigestSupport.quote(source)}"
+  end
 
   # ハッシュ値化に用いる型の識別子
   #
@@ -69,5 +79,9 @@ class Object
   # MEMO: #to_s以外で値を指定する場合は、本メソッドをオーバーライドすること。
   #       型の識別は#to_hexdigest_inputが担うため、オーバーライド側で
   #       型を意識する必要はない
+  #
+  # MEMO: #to_sも本メソッドも実装していないオブジェクトは、既定のObject#to_sが
+  #       返すオブジェクトIDが値になってしまう。#to_hexdigest_inputで検査して
+  #       例外にしているため、そのままダイジェストになることはない
   def to_hexdigest_source = to_s
 end

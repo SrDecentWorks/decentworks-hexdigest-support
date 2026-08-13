@@ -16,8 +16,9 @@ RSpec.describe "decentworks:hexdigest_support:install ジェネレータ", type:
   end
 
   describe "本体のrequireでは読み込まれないこと" do
-    # MEMO: gem本体はRails非依存。ジェネレータを常時requireするとRails未導入の
-    #       環境でLoadErrorになるため、遅延読み込みであることを担保する
+    # MEMO: gem本体はactivesupportには依存するがrailtiesには依存しない。ジェネレータを
+    #       常時requireするとrailties未導入の環境でLoadErrorになるため、
+    #       遅延読み込みであることを担保する
     it { expect(defined?(::Decentworks::HexdigestSupport::Generators::InstallGenerator)).to be_nil }
   end
 

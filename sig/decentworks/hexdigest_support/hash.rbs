@@ -1,3 +1,3 @@
-class ::Hash
+class ::Hash[unchecked out K, unchecked out V]
   def to_hexdigest_source: -> ::String
 end

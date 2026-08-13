@@ -11,7 +11,10 @@ module Decentworks
       #
       # MEMO: 本ファイルはlib/decentworks/hexdigest_support.rbからはrequireしない。
       #       Railsのジェネレータ探索（lib/generators配下）から呼ばれた時にだけ
-      #       読み込まれるため、Rails非依存のまま利用できる
+      #       読み込まれるため、railtiesを導入していない環境でも利用できる
+      #
+      # MEMO: gem本体はactivesupportに依存する（ActiveSupport::TimeWithZone対応のため）が、
+      #       railtiesには依存しない。この遅延読み込みが担保しているのは後者
       class InstallGenerator < ::Rails::Generators::Base
         source_root ::File.expand_path("templates", __dir__)
 

@@ -5,13 +5,13 @@
 
 任意のRubyオブジェクトから、決定的なハッシュ値（16進ダイジェスト）を求めるための拡張ライブラリです。
 
-`Object` にダイジェスト生成用のメソッドを追加し、`Array` / `Hash` / `Range` には構造を考慮した入力生成を実装しています。
+`Object` にダイジェスト生成用のメソッドを追加し、`Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` には構造を考慮した入力生成を、`Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` には正規化した入力生成を実装しています。
 
 - **型を保持する** — `:a` と `"a"`、`1` と `"1"` は異なるダイジェストになります
 - **順序に依存しない** — 配列・ハッシュは要素をソートしてから連結するため、並び順が違っても同じダイジェストになります
-- **Rubyのバージョンに依存しない** — `Hash#inspect` などネイティブの文字列表現には依存せず、自前で入力を組み立てます
+- **実行環境に依存しない** — `Hash#inspect` や `String#inspect` などネイティブの文字列表現には依存せず、自前で入力を組み立てます（Rubyのバージョンやロケールが変わってもダイジェストは変わりません）
 - **ソルトに対応** — 設定したソルトをダイジェストの入力へ前置します
-- **Rails非依存** — gem本体はRailsに依存しません（ジェネレータのみRails利用時に読み込まれます）
+- **Railsの日時に対応** — `ActiveSupport::TimeWithZone` も `Time` と同じダイジェストになります
 
 対応アルゴリズムはMD5 / RMD160 / SHA1 / SHA256 / SHA384 / SHA512です。
 
@@ -39,7 +39,7 @@ $ gem install decentworks-hexdigest-support
 require "decentworks/hexdigest_support"
 ```
 
-必要なRubyのバージョンは `>= 4.0.0` です。
+必要なRubyのバージョンは `>= 4.0.0` です。`activesupport` （`>= 8.0`）に依存します。
 
 ## セットアップ
 
@@ -140,6 +140,81 @@ $ bin/rails generate decentworks:hexdigest_support:install --salt-key=custom_sal
 { id: 1, tags: %w[a b], range: (1..3) }.to_hexdigest
 ```
 
+### 構造体・集合
+
+`Struct` / `Data` はメンバー名と値の組で決まります。`Set` は配列と同じく要素をソートしてから連結します。
+
+```ruby
+Point = Struct.new(:x, :y)
+Point.new(1, 2).to_hexdigest_source # => '{Symbol:"x"=>Integer:"1",Symbol:"y"=>Integer:"2"}'
+
+Coord = Data.define(:x, :y)
+Coord.new(x: 1, y: 2).to_hexdigest
+
+# メンバー名が違えば値が同じでも異なるダイジェストになる
+Struct.new(:a, :b).new(1, 2).to_hexdigest == Struct.new(:x, :y).new(1, 2).to_hexdigest # => false
+
+Set[1, 2].to_hexdigest == Set[2, 1].to_hexdigest # => true
+
+# 同じ要素の配列とは異なるダイジェストになる（型で区別される）
+Set[1, 2].to_hexdigest == [1, 2].to_hexdigest # => false
+```
+
+> [!NOTE]
+> 定数へ代入していない無名の `Struct` / `Data` は型が `Struct` / `Data` へ丸まるため、メンバー名と値が同じであれば別々に生成したもの同士も同じダイジェストになります。型で区別したい場合は定数へ代入してください。
+
+### 日時
+
+`Time` / `DateTime` / `ActiveSupport::TimeWithZone` はUTCへ変換し、ナノ秒までの精度で正規化されます。タイムゾーンの違いはダイジェストに影響しません。
+
+```ruby
+Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest_source
+# => "2026-08-13T04:05:06.000000000Z"
+
+# 同じ瞬間を指す時刻は同じダイジェストになる
+Time.new(2026, 8, 13, 13, 5, 6, "+09:00").to_hexdigest == Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest # => true
+```
+
+さらに、この3つは**同じ型として扱われます**。同じ瞬間を指していればクラスが違ってもダイジェストは一致します。
+
+```ruby
+Time.zone = "Asia/Tokyo"
+
+Time.zone.local(2026, 8, 13, 13, 5, 6).to_hexdigest_type # => "Time"
+DateTime.new(2026, 8, 13, 13, 5, 6, "+09:00").to_hexdigest_type # => "Time"
+
+Time.zone.local(2026, 8, 13, 13, 5, 6).to_hexdigest == Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest # => true
+```
+
+Railsでは同じ瞬間が経路によって別のクラスで現れます（`Time.zone.now` とActiveRecordの `datetime` カラムは `ActiveSupport::TimeWithZone`、`Time.now` や `File.mtime` は `Time`）。型をクラス名のままにすると、入力経路の違いだけでダイジェストが割れてしまうため、時刻に限っては型を `"Time"` へ正規化しています。
+
+`Date` は「ある一瞬」ではなく1日を指すため、この正規化の対象外です。
+
+```ruby
+Date.new(2026, 8, 13).to_hexdigest_source # => "2026-08-13"
+Date.new(2026, 8, 13).to_hexdigest_type   # => "Date"
+
+# 同じ日付のDateTimeとは異なるダイジェストになる
+Date.new(2026, 8, 13).to_hexdigest == DateTime.new(2026, 8, 13).to_hexdigest # => false
+```
+
+> [!NOTE]
+> ナノ秒より細かい精度は切り捨てられます。DBの `timestamp`（多くはマイクロ秒）と往復させても値が変わらない粒度に揃えるためです。
+
+### nil・真偽値
+
+```ruby
+nil.to_hexdigest_input   # => "NilClass:\"nil\""
+true.to_hexdigest_input  # => "TrueClass:\"true\""
+false.to_hexdigest_input # => "FalseClass:\"false\""
+
+# 空文字とは区別される
+nil.to_hexdigest == "".to_hexdigest # => false
+
+# ハッシュの値がnilの場合も、キーそのものがない場合と区別される
+{ a: nil }.to_hexdigest == {}.to_hexdigest # => false
+```
+
 ### 独自クラスのダイジェスト
 
 既定では `#to_s` の結果が入力になります。値を明示したい場合は `#to_hexdigest_source` をオーバーライドします。型は `#to_hexdigest_input` が付与するため、オーバーライド側で型を意識する必要はありません。
@@ -162,6 +237,24 @@ User.new(1, "user@example.com").to_hexdigest
 # 値が同じなら同じダイジェストになる
 User.new(1, "user@example.com").to_hexdigest == User.new(1, "user@example.com").to_hexdigest
 # => true
+```
+
+`#to_s` も `#to_hexdigest_source` も実装していないオブジェクトは、既定の `Object#to_s` が返すオブジェクトIDが値になってしまいます。この場合は例外になります。
+
+```ruby
+Object.new.to_hexdigest
+# => Decentworks::HexdigestSupport::NonDeterministicSourceError
+
+# Procや無名クラスのように、独自の#to_sがオブジェクトIDを含む型も同様
+proc {}.to_hexdigest
+# => Decentworks::HexdigestSupport::NonDeterministicSourceError
+```
+
+配列やハッシュの中に含まれている場合も検出されます。
+
+```ruby
+{ user: Object.new }.to_hexdigest
+# => Decentworks::HexdigestSupport::NonDeterministicSourceError
 ```
 
 ### 入力の確認
@@ -190,9 +283,38 @@ User.new(1, "user@example.com").to_hexdigest == User.new(1, "user@example.com").
 
 ダイジェストは同一性の判定や値の秘匿を目的としたものです。パスワードの保存など、総当たり耐性が必要な用途には適していません（その用途にはbcryptなどのパスワードハッシュを使ってください）。
 
+### 値の引用とエスケープ
+
+値は引用符で囲まれ、引用符（`"`）とバックスラッシュ（`\`）だけがエスケープされます。`#inspect` は使いません。`#inspect` は非ASCII文字を `Encoding.default_external` が印字可能かどうかでエスケープするか決めるため、同じ値でもロケール次第でダイジェストが変わってしまうためです。
+
+```ruby
+# UTF-8環境の#inspectと同じ出力になる
+"あ".to_hexdigest_input # => "String:\"あ\""
+
+# 制御文字はエスケープせず、そのまま入力に含まれる
+"a\nb".to_hexdigest_input # => "String:\"a\nb\"" （#inspectなら "String:\"a\\nb\""）
+```
+
+> [!CAUTION]
+> 改行やタブなどの制御文字を含む値は、`#inspect` を使っていた頃とダイジェストが変わります。ASCIIのみで制御文字を含まない値、およびUTF-8環境で求めた非ASCIIの値のダイジェストは変わりません。
+
 ### コアクラスの拡張
 
-本gemは `Object` / `Array` / `Hash` / `Range` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
+本gemは `Object` / `NilClass` / `Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` / `Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
+
+### ActiveSupportのコア拡張の読み込み
+
+`ActiveSupport::TimeWithZone` は ActiveSupport の autoload 経由でしか解決できないため、本gemは `require "active_support/time"` を無条件に実行します。これに伴い、`Time` / `Date` / `DateTime` / `Integer` / `Numeric` / `String` へのActiveSupportのコア拡張（`3.days` や `String#to_time` など）も読み込まれます。
+
+Railsであればいずれも読み込まれているものなので影響はありませんが、Rails以外で使う場合はこの副作用を考慮してください。
+
+なお、gem本体が依存するのは `activesupport` のみで、`railties` には依存しません（ジェネレータは `lib/generators` 配下に置かれ、Railsのジェネレータ探索から呼ばれた時にだけ読み込まれます）。
+
+### 時刻の型の正規化
+
+`Time` / `DateTime` / `ActiveSupport::TimeWithZone` の `#to_hexdigest_type` は `"Time"` を返します。「型で区別する」という本gemの原則に対する意図的な例外です。
+
+同じ瞬間が経路によって別のクラスで現れるRailsでは、型を実装クラス名のままにするとダイジェストが割れます。詳細は[日時](#日時)を参照してください。
 
 ### 独自クラスのオーバーライド
 

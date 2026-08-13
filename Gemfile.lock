@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     decentworks-hexdigest-support (0.1.0)
+      activesupport (>= 8.0)
 
 GEM
   remote: https://rubygems.org/
@@ -106,6 +107,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activesupport (~> 8.0)
   decentworks-hexdigest-support!
   faker (~> 3.8)
   rake (~> 13.0)

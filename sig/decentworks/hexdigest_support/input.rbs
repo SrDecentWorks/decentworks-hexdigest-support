@@ -1,0 +1,11 @@
+module Decentworks
+  module HexdigestSupport
+    class NonDeterministicSourceError < ::StandardError
+    end
+
+    DEFAULT_TO_S_PATTERN: ::Regexp
+
+    def self.quote: (untyped value) -> ::String
+    def self.validate_source!: (untyped source, untyped object) -> void
+  end
+end

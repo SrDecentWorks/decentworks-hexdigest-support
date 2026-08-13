@@ -1,0 +1,8 @@
+module Decentworks
+  module HexdigestSupport
+    module TimeLike
+      def to_hexdigest_type: -> ::String
+      def to_hexdigest_source: -> ::String
+    end
+  end
+end
