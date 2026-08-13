@@ -1,0 +1,104 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+RSpec.describe ::Hash do
+  describe "#to_hexdigest_source" do
+    subject { instance.to_hexdigest_source }
+
+    context "空ハッシュの場合" do
+      let(:instance) { {} }
+
+      it { is_expected.to eq "{}" }
+    end
+
+    context "要素がある場合" do
+      let(:instance) { { b: 2, a: 1, c: 3 } }
+
+      it { is_expected.to eq '{Symbol:"a"=>Numeric:"1",Symbol:"b"=>Numeric:"2",Symbol:"c"=>Numeric:"3"}' }
+    end
+
+    context "キーがオブジェクトの場合（キーも正規化されること）" do
+      let(:key_class) do
+        Class.new do
+          def initialize(label) = @label = label
+          def to_s = @label
+        end
+      end
+      let(:instance) { { key_class.new("k") => "v" } }
+      # instance とは別インスタンスの等価なハッシュ（キーのオブジェクトも別物）
+      let(:equivalent) { { key_class.new("k") => "v" } }
+
+      it "毎回同じ値になる（キーのオブジェクトIDに依存しない）" do
+        expect(instance.to_hexdigest_source).to eq equivalent.to_hexdigest_source
+      end
+
+      it { is_expected.to eq '{Object:"k"=>String:"v"}' }
+    end
+
+    context "キーの型が混在する場合（比較不能で例外にならないこと）" do
+      let(:instance) { { "a" => 1, 2 => "x", [3] => "y" } }
+
+      it "例外が発生しない" do
+        expect { instance.to_hexdigest_source }.not_to raise_error
+      end
+
+      it { is_expected.to eq %q({Array:"[Numeric:\"3\"]"=>String:"y",Numeric:"2"=>String:"x",String:"a"=>Numeric:"1"}) }
+    end
+
+    context "SymbolキーとStringキーが混在する場合" do
+      let(:instance) { { a: 1, "a" => 2 } }
+      let(:swapped) { { "a" => 1, a: 2 } }
+
+      it { is_expected.to eq '{String:"a"=>Numeric:"2",Symbol:"a"=>Numeric:"1"}' }
+
+      it "キーの型と値の対応が異なるハッシュとは異なる値になる（衝突しない）" do
+        expect(instance.to_hexdigest_source).not_to eq swapped.to_hexdigest_source
+      end
+    end
+
+    context "キーの型だけが異なる場合" do
+      it "Symbolキーのハッシュと文字列キーのハッシュは異なる値になる" do
+        expect({ a: 1 }.to_hexdigest_source).not_to eq({ "a" => 1 }.to_hexdigest_source)
+      end
+
+      it "数値キーのハッシュと文字列キーのハッシュは異なる値になる" do
+        expect({ 1 => "v" }.to_hexdigest_source).not_to eq({ "1" => "v" }.to_hexdigest_source)
+      end
+    end
+
+    context "値の型だけが異なる場合" do
+      it "数値の値と文字列の値は異なる値になる" do
+        expect({ a: 1 }.to_hexdigest_source).not_to eq({ a: "1" }.to_hexdigest_source)
+      end
+    end
+
+    context "入れ子のハッシュの場合" do
+      let(:instance) { { a: { b: 1 } } }
+
+      it { is_expected.to eq %q({Symbol:"a"=>Hash:"{Symbol:\"b\"=>Numeric:\"1\"}"}) }
+    end
+
+    context "配列を値に持つ場合" do
+      let(:instance) { { a: [1, 2] } }
+
+      it { is_expected.to eq %q({Symbol:"a"=>Array:"[Numeric:\"1\",Numeric:\"2\"]"}) }
+    end
+  end
+
+  describe "#to_hexdigest" do
+    it "キーの並び順が違っても同じダイジェストになる" do
+      expect({ a: 1, b: 2 }.to_hexdigest).to eq({ b: 2, a: 1 }.to_hexdigest)
+    end
+
+    it "ハッシュとキー・値の組の配列は異なるダイジェストになる（衝突しない）" do
+      expect({ a: 1 }.to_hexdigest).not_to eq [[:a, 1]].to_hexdigest
+    end
+
+    it "同じ内容なら別インスタンスでも同じダイジェストになる" do
+      # rubocop:disable RSpec/IdenticalEqualityAssertion
+      expect({ a: { b: [1] } }.to_hexdigest).to eq({ a: { b: [1] } }.to_hexdigest)
+      # rubocop:enable RSpec/IdenticalEqualityAssertion
+    end
+  end
+end

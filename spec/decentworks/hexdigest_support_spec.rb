@@ -1,122 +1,59 @@
 # frozen_string_literal: true
 
-require "digest"
-
-require "active_support"
-require "active_support/core_ext"
-
 require "spec_helper"
-require "decentworks/hexdigest_support"
 
 RSpec.describe ::Decentworks::HexdigestSupport do
-  using ::Decentworks::HexdigestSupport
+  describe "エントリポイント" do
+    # MEMO: gem名（decentworks-hexdigest-support）でrequireされた場合も
+    #       同じ実装が読み込まれることを担保する
+    it "gem名でrequireできる" do
+      expect { require "decentworks-hexdigest-support" }.not_to raise_error
 
-  describe "#to_md5_hexdigest" do
-    subject { instance.to_md5_hexdigest }
-
-    let(:instance) { ::Faker::Lorem.word }
-
-    it { is_expected.to eq ::Digest::MD5.hexdigest(instance) }
+      # rubocop:disable RSpec/DescribedClass
+      expect(defined?(::Decentworks::HexdigestSupport)).to eq "constant"
+      # rubocop:enable RSpec/DescribedClass
+    end
   end
 
-  describe "#to_rmd160_hexdigest" do
-    subject { instance.to_rmd160_hexdigest }
-
-    let(:instance) { ::Faker::Lorem.word }
-
-    it { is_expected.to eq ::Digest::RMD160.hexdigest(instance) }
-  end
-
-  describe "#to_sha1_hexdigest" do
-    subject { instance.to_sha1_hexdigest }
-
-    let(:instance) { ::Faker::Lorem.word }
-
-    it { is_expected.to eq ::Digest::SHA1.hexdigest(instance) }
-  end
-
-  describe "#to_sha256_hexdigest" do
-    subject { instance.to_sha256_hexdigest }
-
-    let(:instance) { ::Faker::Lorem.word }
-
-    it { is_expected.to eq ::Digest::SHA256.hexdigest(instance) }
-  end
-
-  describe "#to_sha384_hexdigest" do
-    subject { instance.to_sha384_hexdigest }
-
-    let(:instance) { ::Faker::Lorem.word }
-
-    it { is_expected.to eq ::Digest::SHA384.hexdigest(instance) }
-  end
-
-  describe "#to_sha512_hexdigest" do
-    subject { instance.to_sha512_hexdigest }
-
-    let(:instance) { ::Faker::Lorem.word }
-
-    it { is_expected.to eq ::Digest::SHA512.hexdigest(instance) }
-  end
-
-  describe "#__to_hexdigest_source" do
-    subject { instance.__to_hexdigest_source }
-
-    context "Object" do
-      let(:instance) { ::Faker::Lorem.word }
-
-      it { is_expected.to eq instance }
+  describe "読み込まれる拡張" do
+    it "Objectにハッシュ値化のインタフェースが生える" do
+      expect(::Object.new).to respond_to(
+        :to_md5_hexdigest,
+        :to_rmd160_hexdigest,
+        :to_sha1_hexdigest,
+        :to_sha256_hexdigest,
+        :to_sha384_hexdigest,
+        :to_sha512_hexdigest,
+        :to_md_hexdigest,
+        :to_rmd_hexdigest,
+        :to_sha_hexdigest,
+        :to_hexdigest,
+        :to_salted_hexdigest_input,
+        :to_hexdigest_input,
+        :to_hexdigest_type,
+        :to_hexdigest_source
+      )
     end
 
-    context "Array" do
-      context "空配列の場合" do
-        let(:instance) { [] }
+    # MEMO: ownerを見るのは、Object#to_hexdigest_sourceへフォールバックしていないこと
+    #       （＝各型の実装が読み込まれていること）を確かめるため
+    it "各型が#to_hexdigest_sourceを独自に定義している" do
+      classes = [::NilClass, ::Array, ::Hash, ::Range, ::Struct, ::Data, ::Set, ::Date]
 
-        it { is_expected.to eq "[]" }
-      end
-
-      context "配列の場合" do
-        let(:instance) { [1, 2, 3] }
-
-        it { is_expected.to eq "[1,2,3]" }
-      end
-
-      context "配列の場合（並び違い）" do
-        let(:instance) { [3, 2, 1] }
-
-        it { is_expected.to eq "[1,2,3]" }
-      end
+      expect(classes.to_h { |klass| [klass, klass.instance_method(:to_hexdigest_source).owner] })
+        .to eq classes.to_h { |klass| [klass, klass] }
     end
 
-    context "Hash" do
-      context "空ハッシュの場合" do
-        let(:instance) { {} }
-
-        it { is_expected.to eq "{}" }
-      end
-
-      context "要素がある場合" do
-        let(:instance) { {b: 2, a: 1, c: 3} }
-
-        it { is_expected.to eq '{a: "1", b: "2", c: "3"}' }
-      end
+    # rubocop:disable RSpec/DescribedClass
+    it "時刻を表す型にTimeLikeがincludeされている" do
+      expect([::Time, ::DateTime, ::ActiveSupport::TimeWithZone])
+        .to all(satisfy { |klass| klass.include?(::Decentworks::HexdigestSupport::TimeLike) })
     end
 
-    context "Range" do
-      let(:first) { ::Faker::Lorem.word }
-      let(:last) { ::Faker::Lorem.word }
-
-      context "終端を含む" do
-        let(:instance) { first..last }
-
-        it { is_expected.to eq({first:, last:, exclude_end: false}.__to_hexdigest_source) }
-      end
-
-      context "終端を含まない" do
-        let(:instance) { first...last }
-
-        it { is_expected.to eq({first:, last:, exclude_end: true}.__to_hexdigest_source) }
-      end
+    it "数を表す型にNumericLikeがincludeされている" do
+      expect([::Integer, ::Float, ::Rational, ::BigDecimal])
+        .to all(satisfy { |klass| klass.include?(::Decentworks::HexdigestSupport::NumericLike) })
     end
+    # rubocop:enable RSpec/DescribedClass
   end
 end
