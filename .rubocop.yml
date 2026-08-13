@@ -291,3 +291,11 @@ RSpec/SpecFilePathSuffix:
 # receive はまとめたくない
 RSpec/ReceiveMessages:
   Enabled: false
+
+# ジェネレータのspecはdescribeにクラスを渡せない。渡すと定数が解決されてジェネレータが
+# 読み込まれてしまい、「本体のrequireでは読み込まれない（Rails非依存）」という検証自体が
+# 成立しなくなるため、type: :generator を付けたspecを対象外にする
+RSpec/DescribeClass:
+  IgnoredMetadata:
+    type:
+      - generator
