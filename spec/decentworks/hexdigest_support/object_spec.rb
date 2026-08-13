@@ -200,7 +200,7 @@ RSpec.describe ::Object do
     context "数値の場合" do
       let(:instance) { 1 }
 
-      it { is_expected.to eq 'Integer:"1"' }
+      it { is_expected.to eq 'Numeric:"1"' }
     end
 
     context "シンボルの場合" do

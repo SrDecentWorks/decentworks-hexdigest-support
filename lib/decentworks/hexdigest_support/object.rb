@@ -56,8 +56,12 @@ class Object
   # MEMO: 検査を#to_hexdigest_sourceではなく本メソッドで行うのは、ここが
   #       すべての値が通る唯一の経路であるため。オーバーライドされた
   #       #to_hexdigest_sourceが返した値も同じように検査される
+  #
+  # MEMO: 循環参照の検出も同じ理由でここに置く。要素を辿るのは各型の
+  #       #to_hexdigest_sourceだが、その入り口は必ず本メソッドを通るため、
+  #       独自クラス同士が参照しあう循環も検出できる
   def to_hexdigest_input
-    source = to_hexdigest_source
+    source = ::Decentworks::HexdigestSupport.detect_circular_reference(self) { to_hexdigest_source }
     ::Decentworks::HexdigestSupport.validate_source!(source, self)
 
     "#{to_hexdigest_type}:#{::Decentworks::HexdigestSupport.quote(source)}"

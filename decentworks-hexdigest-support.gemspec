@@ -35,6 +35,10 @@ Gem::Specification.new do |spec|
   # TimeWithZone として現れるため、条件付き対応ではなく依存として扱う
   spec.add_dependency "activesupport", ">= 8.0"
 
+  # BigDecimal への対応で必要。Ruby 3.4 以降 bigdecimal は default gem ではなく
+  # bundled gem のため、依存として明示する
+  spec.add_dependency "bigdecimal", ">= 3.1"
+
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
 end

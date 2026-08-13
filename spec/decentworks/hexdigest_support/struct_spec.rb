@@ -22,14 +22,14 @@ RSpec.describe ::Struct do
     context "メンバーがある場合" do
       let(:instance) { point_class.new(1, "a") }
 
-      it { is_expected.to eq '{Symbol:"x"=>Integer:"1",Symbol:"y"=>String:"a"}' }
+      it { is_expected.to eq '{Symbol:"x"=>Numeric:"1",Symbol:"y"=>String:"a"}' }
     end
 
     context "メンバーが未設定の場合" do
       let(:instance) { point_class.new(1) }
 
       it "未設定のメンバーはnilとして含まれる" do
-        is_expected.to eq '{Symbol:"x"=>Integer:"1",Symbol:"y"=>NilClass:"nil"}'
+        is_expected.to eq '{Symbol:"x"=>Numeric:"1",Symbol:"y"=>NilClass:"nil"}'
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe ::Struct do
       let(:instance) { point_class.new([1, 2], { a: 1 }) }
 
       it "メンバーも再帰的に正規化される" do
-        is_expected.to eq %q({Symbol:"x"=>Array:"[Integer:\"1\",Integer:\"2\"]",Symbol:"y"=>Hash:"{Symbol:\"a\"=>Integer:\"1\"}"})
+        is_expected.to eq %q({Symbol:"x"=>Array:"[Numeric:\"1\",Numeric:\"2\"]",Symbol:"y"=>Hash:"{Symbol:\"a\"=>Numeric:\"1\"}"})
       end
     end
 

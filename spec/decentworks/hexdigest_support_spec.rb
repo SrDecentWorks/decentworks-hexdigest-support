@@ -49,6 +49,11 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       expect([::Time, ::DateTime, ::ActiveSupport::TimeWithZone])
         .to all(satisfy { |klass| klass.include?(::Decentworks::HexdigestSupport::TimeLike) })
     end
+
+    it "数を表す型にNumericLikeがincludeされている" do
+      expect([::Integer, ::Float, ::Rational, ::BigDecimal])
+        .to all(satisfy { |klass| klass.include?(::Decentworks::HexdigestSupport::NumericLike) })
+    end
     # rubocop:enable RSpec/DescribedClass
   end
 end
