@@ -7,10 +7,10 @@
 #       変更前に移行方針を検討すること
 #
 # MEMO: ソルトはリポジトリに平文で置かず、credentialsで管理する。
-#       `bin/rails credentials:edit` で以下のように登録する
+#       EDITOR="vi" bundle exec rails credentials:edit --environment [development | test | production]
 #
-#         decentworks:
-#           <%= salt_key %>: <ランダムな文字列（例: `bin/rails secret` の出力）>
+#       decentworks:
+#         <%= salt_key %>: <ランダムな文字列（例: `bin/rails secret` の出力）>
 ::Decentworks::HexdigestSupport.configure do |config|
   config.salt = ::Rails.application.credentials.dig(:decentworks, :<%= salt_key %>)
 end
