@@ -1,0 +1,7 @@
+class ::Date
+  def to_hexdigest_source: -> ::String
+end
+
+class ::DateTime
+  include ::Decentworks::HexdigestSupport::TimeLike
+end

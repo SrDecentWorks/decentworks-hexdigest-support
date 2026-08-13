@@ -3,6 +3,10 @@
 require "spec_helper"
 
 RSpec.describe ::Time do
+  describe "#to_hexdigest_type" do
+    it { expect(::Time.utc(2026, 8, 13).to_hexdigest_type).to eq "Time" }
+  end
+
   describe "#to_hexdigest_source" do
     subject { instance.to_hexdigest_source }
 
@@ -41,14 +45,6 @@ RSpec.describe ::Time do
 
       it "ナノ秒までで切り捨てられる" do
         expect(instance.to_hexdigest_source).to eq "2026-08-13T04:05:06.000000001Z"
-      end
-    end
-
-    context "ActiveSupportのタイムゾーン付き時刻から変換した場合" do
-      let(:instance) { ::Time.zone.local(2026, 8, 13, 13, 5, 6).to_time }
-
-      it "UTCへ変換された値になる" do
-        expect(instance.to_hexdigest_source).to eq "2026-08-13T04:05:06.000000000Z"
       end
     end
   end

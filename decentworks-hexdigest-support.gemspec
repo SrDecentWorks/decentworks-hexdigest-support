@@ -31,8 +31,9 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
+  # ActiveSupport::TimeWithZone への対応で必要。Rails 上では同じ瞬間が Time ではなく
+  # TimeWithZone として現れるため、条件付き対応ではなく依存として扱う
+  spec.add_dependency "activesupport", ">= 8.0"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

@@ -3,6 +3,12 @@
 require "spec_helper"
 
 RSpec.describe ::Date do
+  describe "#to_hexdigest_type" do
+    it "Timeへは正規化されない（1日を指す型のため）" do
+      expect(::Date.new(2026, 8, 13).to_hexdigest_type).to eq "Date"
+    end
+  end
+
   describe "#to_hexdigest_source" do
     subject { instance.to_hexdigest_source }
 

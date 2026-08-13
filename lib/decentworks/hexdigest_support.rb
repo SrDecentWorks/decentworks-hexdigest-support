@@ -9,8 +9,8 @@ require_relative "hexdigest_support/hash"
 require_relative "hexdigest_support/range"
 require_relative "hexdigest_support/struct"
 require_relative "hexdigest_support/data"
+require_relative "hexdigest_support/set"
+require_relative "hexdigest_support/time_like"
 require_relative "hexdigest_support/time"
-
-# MEMO: Set / Date / DateTimeへの拡張は、それらが読み込まれている場合にだけ適用する。
-#       本gemより後にrequireした場合は.apply!を明示的に呼ぶ必要がある
-require_relative "hexdigest_support/optional_extensions"
+require_relative "hexdigest_support/date"
+require_relative "hexdigest_support/time_with_zone"

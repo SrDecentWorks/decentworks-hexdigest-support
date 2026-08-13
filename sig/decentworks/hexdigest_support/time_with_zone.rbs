@@ -1,0 +1,5 @@
+module ActiveSupport
+  class TimeWithZone
+    include ::Decentworks::HexdigestSupport::TimeLike
+  end
+end

@@ -3,6 +3,12 @@
 require "spec_helper"
 
 RSpec.describe ::DateTime do
+  describe "#to_hexdigest_type" do
+    it "Timeへ正規化される" do
+      expect(::DateTime.new(2026, 8, 13).to_hexdigest_type).to eq "Time"
+    end
+  end
+
   describe "#to_hexdigest_source" do
     subject { instance.to_hexdigest_source }
 
@@ -24,15 +30,18 @@ RSpec.describe ::DateTime do
   end
 
   describe "#to_hexdigest" do
-    it "同じ瞬間を指すTimeと同じダイジェストにはならない（型で区別される）" do
-      instance = ::DateTime.new(2026, 8, 13, 4, 5, 6, "+00:00")
-
-      expect(instance.to_hexdigest).not_to eq ::Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest
+    it "同じ瞬間を指すTimeと同じダイジェストになる" do
+      expect(::DateTime.new(2026, 8, 13, 4, 5, 6, "+00:00").to_hexdigest)
+        .to eq ::Time.utc(2026, 8, 13, 4, 5, 6).to_hexdigest
     end
 
     it "同じ瞬間を指す日時はオフセットが違っても同じダイジェストになる" do
       expect(::DateTime.new(2026, 8, 13, 13, 5, 6, "+09:00").to_hexdigest)
         .to eq ::DateTime.new(2026, 8, 13, 4, 5, 6, "+00:00").to_hexdigest
+    end
+
+    it "同じ日付のDateとは異なるダイジェストになる" do
+      expect(::DateTime.new(2026, 8, 13).to_hexdigest).not_to eq ::Date.new(2026, 8, 13).to_hexdigest
     end
   end
 end

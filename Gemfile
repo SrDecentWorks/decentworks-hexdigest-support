@@ -24,3 +24,5 @@ gem "simplecov", "~> 1.0.3"
 
 # Faker
 gem "faker", "~> 3.8"
+
+gem "activesupport", "~> 8.0"

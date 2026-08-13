@@ -1,0 +1,3 @@
+class ::Data
+  def to_hexdigest_source: -> ::String
+end
