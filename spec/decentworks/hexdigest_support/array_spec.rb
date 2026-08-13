@@ -15,13 +15,13 @@ RSpec.describe ::Array do
     context "配列の場合" do
       let(:instance) { [1, 2, 3] }
 
-      it { is_expected.to eq '[Integer:"1",Integer:"2",Integer:"3"]' }
+      it { is_expected.to eq '[Numeric:"1",Numeric:"2",Numeric:"3"]' }
     end
 
     context "配列の場合（並び違い）" do
       let(:instance) { [3, 2, 1] }
 
-      it { is_expected.to eq '[Integer:"1",Integer:"2",Integer:"3"]' }
+      it { is_expected.to eq '[Numeric:"1",Numeric:"2",Numeric:"3"]' }
     end
 
     context "要素の文字列表現に区切り文字（,）が含まれる場合" do
@@ -36,7 +36,7 @@ RSpec.describe ::Array do
     context "入れ子の配列の場合" do
       let(:instance) { [[1, 2], 3] }
 
-      it { is_expected.to eq %q([Array:"[Integer:\"1\",Integer:\"2\"]",Integer:"3"]) }
+      it { is_expected.to eq %q([Array:"[Numeric:\"1\",Numeric:\"2\"]",Numeric:"3"]) }
 
       it "入れ子と平坦な配列は異なる値になる（衝突しない）" do
         expect([%w[a], %w[b]].to_hexdigest_source).not_to eq %w[a b].to_hexdigest_source
@@ -46,7 +46,7 @@ RSpec.describe ::Array do
     context "ハッシュを要素に持つ場合" do
       let(:instance) { [{ a: 1 }] }
 
-      it { is_expected.to eq %q([Hash:"{Symbol:\"a\"=>Integer:\"1\"}"]) }
+      it { is_expected.to eq %q([Hash:"{Symbol:\"a\"=>Numeric:\"1\"}"]) }
     end
 
     context "同じ要素が重複する場合" do

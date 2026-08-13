@@ -15,7 +15,7 @@ RSpec.describe ::Hash do
     context "要素がある場合" do
       let(:instance) { { b: 2, a: 1, c: 3 } }
 
-      it { is_expected.to eq '{Symbol:"a"=>Integer:"1",Symbol:"b"=>Integer:"2",Symbol:"c"=>Integer:"3"}' }
+      it { is_expected.to eq '{Symbol:"a"=>Numeric:"1",Symbol:"b"=>Numeric:"2",Symbol:"c"=>Numeric:"3"}' }
     end
 
     context "キーがオブジェクトの場合（キーも正規化されること）" do
@@ -43,14 +43,14 @@ RSpec.describe ::Hash do
         expect { instance.to_hexdigest_source }.not_to raise_error
       end
 
-      it { is_expected.to eq %q({Array:"[Integer:\"3\"]"=>String:"y",Integer:"2"=>String:"x",String:"a"=>Integer:"1"}) }
+      it { is_expected.to eq %q({Array:"[Numeric:\"3\"]"=>String:"y",Numeric:"2"=>String:"x",String:"a"=>Numeric:"1"}) }
     end
 
     context "SymbolキーとStringキーが混在する場合" do
       let(:instance) { { a: 1, "a" => 2 } }
       let(:swapped) { { "a" => 1, a: 2 } }
 
-      it { is_expected.to eq '{String:"a"=>Integer:"2",Symbol:"a"=>Integer:"1"}' }
+      it { is_expected.to eq '{String:"a"=>Numeric:"2",Symbol:"a"=>Numeric:"1"}' }
 
       it "キーの型と値の対応が異なるハッシュとは異なる値になる（衝突しない）" do
         expect(instance.to_hexdigest_source).not_to eq swapped.to_hexdigest_source
@@ -76,13 +76,13 @@ RSpec.describe ::Hash do
     context "入れ子のハッシュの場合" do
       let(:instance) { { a: { b: 1 } } }
 
-      it { is_expected.to eq %q({Symbol:"a"=>Hash:"{Symbol:\"b\"=>Integer:\"1\"}"}) }
+      it { is_expected.to eq %q({Symbol:"a"=>Hash:"{Symbol:\"b\"=>Numeric:\"1\"}"}) }
     end
 
     context "配列を値に持つ場合" do
       let(:instance) { { a: [1, 2] } }
 
-      it { is_expected.to eq %q({Symbol:"a"=>Array:"[Integer:\"1\",Integer:\"2\"]"}) }
+      it { is_expected.to eq %q({Symbol:"a"=>Array:"[Numeric:\"1\",Numeric:\"2\"]"}) }
     end
   end
 

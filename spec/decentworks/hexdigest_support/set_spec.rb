@@ -15,7 +15,7 @@ RSpec.describe ::Set do
     context "要素がある場合" do
       let(:instance) { described_class[1, "a", :b] }
 
-      it { is_expected.to eq '[Integer:"1",String:"a",Symbol:"b"]' }
+      it { is_expected.to eq '[Numeric:"1",String:"a",Symbol:"b"]' }
     end
 
     context "挿入順が異なる場合" do
@@ -46,13 +46,13 @@ RSpec.describe ::Set do
     context "nilを含む場合" do
       let(:instance) { described_class[nil, 1] }
 
-      it { is_expected.to eq '[Integer:"1",NilClass:"nil"]' }
+      it { is_expected.to eq '[NilClass:"nil",Numeric:"1"]' }
     end
 
     context "入れ子のSetの場合" do
       let(:instance) { described_class[described_class[1]] }
 
-      it { is_expected.to eq %q([Set:"[Integer:\"1\"]"]) }
+      it { is_expected.to eq %q([Set:"[Numeric:\"1\"]"]) }
     end
   end
 

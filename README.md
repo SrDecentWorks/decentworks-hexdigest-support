@@ -5,13 +5,14 @@
 
 任意のRubyオブジェクトから、決定的なハッシュ値（16進ダイジェスト）を求めるための拡張ライブラリです。
 
-`Object` にダイジェスト生成用のメソッドを追加し、`Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` には構造を考慮した入力生成を、`Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` には正規化した入力生成を実装しています。
+`Object` にダイジェスト生成用のメソッドを追加し、`Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` には構造を考慮した入力生成を、`Integer` / `Float` / `Rational` / `BigDecimal` / `Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` には正規化した入力生成を実装しています。
 
 - **型を保持する** — `:a` と `"a"`、`1` と `"1"` は異なるダイジェストになります
 - **順序に依存しない** — 配列・ハッシュは要素をソートしてから連結するため、並び順が違っても同じダイジェストになります
 - **実行環境に依存しない** — `Hash#inspect` や `String#inspect` などネイティブの文字列表現には依存せず、自前で入力を組み立てます（Rubyのバージョンやロケールが変わってもダイジェストは変わりません）
 - **ソルトに対応** — 設定したソルトをダイジェストの入力へ前置します
 - **Railsの日時に対応** — `ActiveSupport::TimeWithZone` も `Time` と同じダイジェストになります
+- **Railsの数値に対応** — `decimal` カラムの `BigDecimal` も `Integer` / `Float` と同じダイジェストになります
 
 対応アルゴリズムはMD5 / RMD160 / SHA1 / SHA256 / SHA384 / SHA512です。
 
@@ -39,7 +40,7 @@ $ gem install decentworks-hexdigest-support
 require "decentworks/hexdigest_support"
 ```
 
-必要なRubyのバージョンは `>= 4.0.0` です。`activesupport` （`>= 8.0`）に依存します。
+必要なRubyのバージョンは `>= 4.0.0` です。`activesupport` （`>= 8.0`）と `bigdecimal` （`>= 3.1`）に依存します。
 
 ## セットアップ
 
@@ -107,7 +108,7 @@ $ bin/rails generate decentworks:hexdigest_support:install --salt-key=custom_sal
 ### 型が保持される
 
 ```ruby
-1.to_hexdigest_input   # => "Integer:\"1\""
+1.to_hexdigest_input   # => "Numeric:\"1\""
 "1".to_hexdigest_input # => "String:\"1\""
 
 1.to_hexdigest == "1".to_hexdigest # => false
@@ -146,7 +147,7 @@ $ bin/rails generate decentworks:hexdigest_support:install --salt-key=custom_sal
 
 ```ruby
 Point = Struct.new(:x, :y)
-Point.new(1, 2).to_hexdigest_source # => '{Symbol:"x"=>Integer:"1",Symbol:"y"=>Integer:"2"}'
+Point.new(1, 2).to_hexdigest_source # => '{Symbol:"x"=>Numeric:"1",Symbol:"y"=>Numeric:"2"}'
 
 Coord = Data.define(:x, :y)
 Coord.new(x: 1, y: 2).to_hexdigest
@@ -162,6 +163,56 @@ Set[1, 2].to_hexdigest == [1, 2].to_hexdigest # => false
 
 > [!NOTE]
 > 定数へ代入していない無名の `Struct` / `Data` は型が `Struct` / `Data` へ丸まるため、メンバー名と値が同じであれば別々に生成したもの同士も同じダイジェストになります。型で区別したい場合は定数へ代入してください。
+
+### 数値
+
+`Integer` / `Float` / `Rational` / `BigDecimal` は有理数として正規化され、**同じ型として扱われます**。同じ数であればクラスが違ってもダイジェストは一致します。
+
+```ruby
+1.to_hexdigest_type                 # => "Numeric"
+BigDecimal("1.0").to_hexdigest_type # => "Numeric"
+
+1.to_hexdigest == 1.0.to_hexdigest                # => true
+1.to_hexdigest == BigDecimal("1.00").to_hexdigest # => true
+1.to_hexdigest == Rational(2, 2).to_hexdigest     # => true
+```
+
+Railsでは同じ数が経路によって別のクラスで現れます（`decimal` カラムは `BigDecimal`、`integer` カラムやJSONの整数は `Integer`、JSONの小数は `Float`）。型をクラス名のままにすると入力経路の違いだけでダイジェストが割れてしまうため、時刻と同じく型を `"Numeric"` へ正規化しています。
+
+値は、有限小数で表せる場合は十進表記に、表せない場合は既約分数の表記になります。
+
+```ruby
+1.0.to_hexdigest_source                # => "1"
+1.5.to_hexdigest_source                # => "1.5"
+BigDecimal("1.50").to_hexdigest_source # => "1.5"
+1e20.to_hexdigest_source               # => "100000000000000000000"
+(-0.0).to_hexdigest_source             # => "0"
+
+Rational(1, 3).to_hexdigest_source     # => "1/3"
+```
+
+`Float` は2進の厳密値ではなく、`#to_s` が返す十進表記として解釈されます。`0.1` の厳密値は `1/10` ではありませんが、見た目どおりの十進として読むため `BigDecimal("0.1")` と同じダイジェストになります。
+
+```ruby
+0.1.to_hexdigest == BigDecimal("0.1").to_hexdigest # => true
+0.1.to_hexdigest == Rational(1, 10).to_hexdigest   # => true
+
+# 計算誤差は丸められず、そのまま保たれる
+(0.1 + 0.2).to_hexdigest == 0.3.to_hexdigest # => false
+```
+
+`NaN` と `±Infinity` は有理数にできないため、`#to_s` の結果がそのまま値になります。
+
+```ruby
+Float::NAN.to_hexdigest_source      # => "NaN"
+Float::INFINITY.to_hexdigest_source # => "Infinity"
+
+# NaN同士は#==がfalseになるが、ダイジェストは一致する
+Float::NAN.to_hexdigest == BigDecimal("NaN").to_hexdigest # => true
+```
+
+> [!NOTE]
+> `Complex` は正規化の対象外で、型は `"Complex"` のままです。`Complex(1, 0) == 1` は真ですが、ダイジェストは一致しません。
 
 ### 日時
 
@@ -257,6 +308,54 @@ proc {}.to_hexdigest
 # => Decentworks::HexdigestSupport::NonDeterministicSourceError
 ```
 
+`String` と `Symbol` は検査の対象外です。値そのものが文字列であり、オブジェクトIDが混入する経路がないためです。オブジェクトIDの表記で始まる文字列（`#inspect` の結果や、それを含むログの1行など）もそのまま扱えます。
+
+```ruby
+"#<User:0x00007f9e0c0d1234>".to_hexdigest # => 例外にならない
+```
+
+> [!NOTE]
+> 裏を返すと、利用側が自分でオブジェクトを文字列化して渡した場合（`"#{object}"` など）は検出できません。gemから見ればただの文字列であり、他の文字列と区別する手段がないためです。
+
+### 循環参照
+
+自身を含む値も例外になります。そのまま辿ると再帰が終わらず、`StandardError` を継承しない `SystemStackError` になってしまうためです。`SystemStackError` は呼び出し側の `rescue` をすり抜けます。
+
+```ruby
+values = [1]
+values << values
+
+values.to_hexdigest
+# => Decentworks::HexdigestSupport::CircularReferenceError
+```
+
+配列・ハッシュ・`Struct` / `Data` / `Set` に加えて、独自クラス同士が参照しあう場合も検出されます。Railsで `belongs_to :parent` と `has_many :children` の両方をダイジェストへ含めた場合などが該当します。
+
+```ruby
+class Node
+  attr_accessor :parent
+
+  def to_hexdigest_source = { parent: }.to_hexdigest_source
+end
+
+node = Node.new
+node.parent = node
+
+node.to_hexdigest
+# => Decentworks::HexdigestSupport::CircularReferenceError
+```
+
+同じオブジェクトが兄弟として複数回現れるのは循環ではないため、例外にはなりません。判定に使うのは、その時点で辿っている経路だけです。
+
+```ruby
+tags = %w[a b]
+
+[tags, tags].to_hexdigest # => 例外にならない
+```
+
+> [!NOTE]
+> 自身を含まない深いネスト（1万段など）は `SystemStackError` のままです。循環と違って有限であり、深さの上限を決め打ちすると正当な構造まで弾いてしまうためです。
+
 ### 入力の確認
 
 デバッグ時は、ダイジェストの元になる文字列を確認できます。
@@ -300,7 +399,7 @@ proc {}.to_hexdigest
 
 ### コアクラスの拡張
 
-本gemは `Object` / `NilClass` / `Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` / `Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
+本gemは `Object` / `NilClass` / `Array` / `Hash` / `Range` / `Struct` / `Data` / `Set` / `Integer` / `Float` / `Rational` / `BigDecimal` / `Time` / `Date` / `DateTime` / `ActiveSupport::TimeWithZone` にメソッドを追加するモンキーパッチです。`#to_hexdigest_source` などのメソッド名が他のライブラリと衝突しないか確認してください。
 
 ### ActiveSupportのコア拡張の読み込み
 
@@ -309,6 +408,12 @@ proc {}.to_hexdigest
 Railsであればいずれも読み込まれているものなので影響はありませんが、Rails以外で使う場合はこの副作用を考慮してください。
 
 なお、gem本体が依存するのは `activesupport` のみで、`railties` には依存しません（ジェネレータは `lib/generators` 配下に置かれ、Railsのジェネレータ探索から呼ばれた時にだけ読み込まれます）。
+
+### 数値の型の正規化
+
+`Integer` / `Float` / `Rational` / `BigDecimal` の `#to_hexdigest_type` は `"Numeric"` を返します。「型で区別する」という本gemの原則に対する意図的な例外です。
+
+同じ数が経路によって別のクラスで現れるRailsでは、型を実装クラス名のままにするとダイジェストが割れます。詳細は[数値](#数値)を参照してください。
 
 ### 時刻の型の正規化
 

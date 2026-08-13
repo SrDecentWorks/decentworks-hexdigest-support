@@ -22,7 +22,7 @@ RSpec.describe ::Data do
     context "メンバーがある場合" do
       let(:instance) { coord_class.new(x: 1, y: "a") }
 
-      it { is_expected.to eq '{Symbol:"x"=>Integer:"1",Symbol:"y"=>String:"a"}' }
+      it { is_expected.to eq '{Symbol:"x"=>Numeric:"1",Symbol:"y"=>String:"a"}' }
     end
 
     context "位置引数で生成した場合" do
