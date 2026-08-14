@@ -2,8 +2,10 @@
 
 ## バージョン制約
 
-- `required_ruby_version` は `>= 4.0.0`、`activesupport` は `~> 8.1` を維持する
-  - 利用想定がこのバージョン以降のため。旧バージョンのRuby / Railsへの対応は行わない
+- `required_ruby_version` は `>= 4.0.0`を維持する
+- `activesupport` は `~> 8.1` を維持する
+- `bigdecimal` は `~> 4.1` を維持する
+- 利用想定がこのバージョン以降のため。旧バージョンのRuby / Railsへの対応は行わない
   - 「利用可能な範囲が狭い」という理由で緩めない
 
 ## gemに同梱するファイル
@@ -23,9 +25,10 @@
 
 ## 作者・ライセンス
 
-- `authors` は `decentworks`、`email` は `yutaka.mizomoto@sr-decentworks.com`
+- `authors` は、 `SrDecentWorks`
+- `email` は、 `yutaka.mizomoto@sr-decentworks.com`
 - ライセンスファイルは `LICENSE` の1ファイルのみ。`LICENSE.txt` を再作成しない
-- `LICENSE` の著作者表記は `decentworks`（`authors` と一致させる）
+- `LICENSE` の著作者表記は、`authors` と一致させる
 
 ## メタデータ
 

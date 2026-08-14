@@ -21,10 +21,7 @@ inherit_gem:
 AllCops:
   # gemspec の required_ruby_version からも解決できるが、明示しておく
   TargetRubyVersion: 4.0
-  SuggestExtensions: false
   NewCops: enable
-  # 何のルールに引っかかったか表示する
-  DisplayCopNames: true
   Exclude:
     - 'bin/**/*'
     - 'tmp/**/*'
