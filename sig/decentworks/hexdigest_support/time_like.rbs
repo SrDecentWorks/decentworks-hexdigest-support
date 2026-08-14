@@ -3,6 +3,8 @@ module Decentworks
     module TimeLike
       def to_hexdigest_type: -> ::String
       def to_hexdigest_source: -> ::String
+
+      def to_time: -> ::Time
     end
   end
 end

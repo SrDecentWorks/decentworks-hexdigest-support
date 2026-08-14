@@ -16,7 +16,7 @@ module Decentworks
       # MEMO: gem本体はactivesupportに依存する（ActiveSupport::TimeWithZone対応のため）が、
       #       railtiesには依存しない。この遅延読み込みが担保しているのは後者
       class InstallGenerator < ::Rails::Generators::Base
-        source_root ::File.expand_path("templates", __dir__)
+        source_root ::File.expand_path("templates", __dir__.to_s)
 
         desc "config/initializers/decentworks_hexdigest_support.rb を生成する"
 

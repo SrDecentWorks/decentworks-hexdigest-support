@@ -1,0 +1,30 @@
+# lib/generators を型検査するための最小限の型定義
+#
+# gem_rbs_collection の railties の型定義は使わない。
+#   - `Rails::Generators::Base#template` がブロック必須（`{ () -> untyped }`）として
+#     定義されているが、実際はブロックは任意であり、正しいコードが型エラーになる
+#   - 同じクラスを再定義すると重複定義になるため、railties を読み込まずに
+#     本ライブラリが実際に使うメソッドだけを宣言する
+#
+# このディレクトリはgemには同梱しない（gemspecのホワイトリストは sig/ のみ）。
+# 第三者のクラスのスタブを配布物に含めると、利用側の型定義と衝突するため。
+module Rails
+  module Generators
+    class Base
+      # テンプレートの探索元ディレクトリを設定する
+      def self.source_root: (?untyped path) -> untyped
+
+      # `rails generate --help` に表示する説明を設定する
+      def self.desc: (?untyped description) -> untyped
+
+      # Thor由来のジェネレータオプションを定義する（InstallGeneratorのsalt_keyオプションで使用）
+      def self.class_option: (untyped name, ?untyped options) -> untyped
+
+      # class_optionで定義したオプションの値を読み出す
+      def options: () -> untyped
+
+      # テンプレートを出力先にコピーする（ブロックは任意）
+      def template: (untyped source, ?untyped destination) -> untyped
+    end
+  end
+end

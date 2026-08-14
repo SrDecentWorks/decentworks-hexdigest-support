@@ -29,7 +29,7 @@ RSpec.describe ::Struct do
       let(:instance) { point_class.new(1) }
 
       it "未設定のメンバーはnilとして含まれる" do
-        is_expected.to eq '{Symbol:"x"=>Numeric:"1",Symbol:"y"=>NilClass:"nil"}'
+        expect(subject).to eq '{Symbol:"x"=>Numeric:"1",Symbol:"y"=>NilClass:"nil"}'
       end
     end
 
@@ -37,7 +37,7 @@ RSpec.describe ::Struct do
       let(:instance) { described_class.new(:x, :y, keyword_init: true).new(x: 1, y: "a") }
 
       it "位置引数のStructと同じ値になる" do
-        is_expected.to eq described_class.new(:x, :y).new(1, "a").to_hexdigest_source
+        expect(subject).to eq described_class.new(:x, :y).new(1, "a").to_hexdigest_source
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe ::Struct do
       let(:instance) { point_class.new([1, 2], { a: 1 }) }
 
       it "メンバーも再帰的に正規化される" do
-        is_expected.to eq %q({Symbol:"x"=>Array:"[Numeric:\"1\",Numeric:\"2\"]",Symbol:"y"=>Hash:"{Symbol:\"a\"=>Numeric:\"1\"}"})
+        expect(subject).to eq %q({Symbol:"x"=>Array:"[Numeric:\"1\",Numeric:\"2\"]",Symbol:"y"=>Hash:"{Symbol:\"a\"=>Numeric:\"1\"}"})
       end
     end
 
@@ -53,7 +53,7 @@ RSpec.describe ::Struct do
       let(:instance) { described_class.new(:a, :b).new(1, 2) }
 
       it "値が同じでも異なる値になる" do
-        is_expected.not_to eq described_class.new(:x, :y).new(1, 2).to_hexdigest_source
+        expect(subject).not_to eq described_class.new(:x, :y).new(1, 2).to_hexdigest_source
       end
     end
   end
