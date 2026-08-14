@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name = "decentworks-hexdigest-support"
   spec.version = ::Decentworks::HexdigestSupport::VERSION
   spec.authors = ["decentworks"]
-  spec.email = [""]
+  spec.email = ["yutaka.mizomoto@sr-decentworks.com"]
 
   spec.summary = "Hash値拡張ライブラリ"
   spec.description = "Hash値拡張ライブラリ"
