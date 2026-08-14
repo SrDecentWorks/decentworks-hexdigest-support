@@ -18,13 +18,17 @@ Gem::Specification.new do |spec|
   spec.metadata["source_code_uri"] = spec.homepage
   spec.metadata["changelog_uri"] = "https://github.com/SrDecentWorks/decentworks-hexdigest-support/blob/main/CHANGELOG.md"
 
-  # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  gemspec = File.basename(__FILE__)
+  # gemに含めるファイル
+  #
+  # 除外の指定漏れで開発用ファイルが同梱されることを避けるため、ホワイトリストで指定する。
+  # 対象は実装（lib）・型定義（sig）・実行ファイル（exe）とドキュメントのみ。
+  # spec / bin / Rakefile / Gemfile / gemspec、および .claude .rubocop.yml .ruby-version .rspec
+  # CODE_OF_CONDUCT.md などの開発用ファイルは含めない。
+  distributed_files = %w[README.md CHANGELOG.md LICENSE]
+  distributed_directories = %w[lib/ sig/ exe/]
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
-    ls.readlines("\x0", chomp: true).reject do |f|
-      (f == gemspec) ||
-        f.start_with?(*%w[bin/ test/ spec/ features/ .git appveyor Gemfile])
+    ls.readlines("\x0", chomp: true).select do |f|
+      distributed_files.include?(f) || f.start_with?(*distributed_directories)
     end
   end
   spec.bindir = "exe"
