@@ -21,10 +21,7 @@ inherit_gem:
 AllCops:
   # gemspec の required_ruby_version からも解決できるが、明示しておく
   TargetRubyVersion: 4.0
-  SuggestExtensions: false
   NewCops: enable
-  # 何のルールに引っかかったか表示する
-  DisplayCopNames: true
   Exclude:
     - 'bin/**/*'
     - 'tmp/**/*'
@@ -126,6 +123,10 @@ Style/RescueStandardError:
   Enabled: true
   EnforcedStyle: implicit
 
+# Steepの型注釈コメント（例: `key #: ::Object`）を通常のコメントと区別する
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
 # fail と使い分ける必要ナシ
 Style/SignalException:
   Enabled: true
@@ -148,9 +149,18 @@ Style/AccessorGrouping:
   EnforcedStyle: separated
 
 # 1_000_000 と区切り文字が 1個以上必要になる場合のみ _ 区切りを必須にする
+#
+# 日付・時刻系のspecは年（2026 など）や分数・秒未満の値をそのままの表記で書きたいため対象外にする。
+# 2_026 のように区切りを入れると「2026年」という意味が読み取りにくくなり、桁区切りとしての
+# 意味も無いため。
 Style/NumericLiterals:
   Enabled: true
   MinDigits: 4
+  Exclude:
+    - "spec/decentworks/hexdigest_support/date_spec.rb"
+    - "spec/decentworks/hexdigest_support/date_time_spec.rb"
+    - "spec/decentworks/hexdigest_support/time_spec.rb"
+    - "spec/decentworks/hexdigest_support/time_with_zone_spec.rb"
 
 # --- Layout ---
 

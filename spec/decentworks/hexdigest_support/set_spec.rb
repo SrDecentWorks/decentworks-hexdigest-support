@@ -22,7 +22,7 @@ RSpec.describe ::Set do
       let(:instance) { described_class[1, 2, 3] }
 
       it "同じ値になる" do
-        is_expected.to eq described_class[3, 1, 2].to_hexdigest_source
+        expect(subject).to eq described_class[3, 1, 2].to_hexdigest_source
       end
     end
 
@@ -31,7 +31,7 @@ RSpec.describe ::Set do
 
       # MEMO: 重複を落とさないArray（array_spec参照）との差を明示する
       it "重複は落ちる" do
-        is_expected.to eq described_class[1].to_hexdigest_source
+        expect(subject).to eq described_class[1].to_hexdigest_source
       end
     end
 
@@ -39,7 +39,7 @@ RSpec.describe ::Set do
       let(:instance) { described_class[1] }
 
       it "異なる値になる" do
-        is_expected.not_to eq described_class["1"].to_hexdigest_source
+        expect(subject).not_to eq described_class["1"].to_hexdigest_source
       end
     end
 

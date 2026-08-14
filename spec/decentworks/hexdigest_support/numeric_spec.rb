@@ -36,7 +36,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       let(:instance) { 1.0 }
 
       it "整数と同じ表記になる" do
-        is_expected.to eq "1"
+        expect(subject).to eq "1"
       end
     end
 
@@ -50,7 +50,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       let(:instance) { -0.25 }
 
       it "整数部が0でも符号が付く" do
-        is_expected.to eq "-0.25"
+        expect(subject).to eq "-0.25"
       end
     end
 
@@ -58,7 +58,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       let(:instance) { Rational(1, 3) }
 
       it "分数表記になる" do
-        is_expected.to eq "1/3"
+        expect(subject).to eq "1/3"
       end
     end
 
@@ -66,7 +66,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       let(:instance) { Rational(2, 4) }
 
       it "既約分数として表記される" do
-        is_expected.to eq "0.5"
+        expect(subject).to eq "0.5"
       end
     end
 
@@ -74,7 +74,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       let(:instance) { -0.0 }
 
       it "ゼロと同じ表記になる" do
-        is_expected.to eq "0"
+        expect(subject).to eq "0"
       end
     end
 
@@ -84,7 +84,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       # MEMO: Float#to_sは"1.0e+20"を返すが、入力に指数表記が混ざると同じ数でも
       #       表記が割れる。十進へ展開されることを固定しておく
       it "十進へ展開される" do
-        is_expected.to eq "100000000000000000000"
+        expect(subject).to eq "100000000000000000000"
       end
     end
 
@@ -92,7 +92,7 @@ RSpec.describe ::Decentworks::HexdigestSupport::NumericLike do
       let(:instance) { 1e-9 }
 
       it "十進へ展開される" do
-        is_expected.to eq "0.000000001"
+        expect(subject).to eq "0.000000001"
       end
     end
 

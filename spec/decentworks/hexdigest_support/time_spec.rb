@@ -20,11 +20,11 @@ RSpec.describe ::Time do
       let(:instance) { described_class.new(2026, 8, 13, 13, 5, 6, "+09:00") }
 
       it "UTCへ変換された値になる" do
-        is_expected.to eq "2026-08-13T04:05:06.000000000Z"
+        expect(subject).to eq "2026-08-13T04:05:06.000000000Z"
       end
 
       it "同じ瞬間を指すUTCの時刻と同じ値になる" do
-        is_expected.to eq described_class.utc(2026, 8, 13, 4, 5, 6).to_hexdigest_source
+        expect(subject).to eq described_class.utc(2026, 8, 13, 4, 5, 6).to_hexdigest_source
       end
     end
 
@@ -33,11 +33,11 @@ RSpec.describe ::Time do
       let(:instance) { described_class.utc(2026, 8, 13, 4, 5, 6, Rational(1, 1000)) }
 
       it "ナノ秒まで保持される" do
-        is_expected.to eq "2026-08-13T04:05:06.000000001Z"
+        expect(subject).to eq "2026-08-13T04:05:06.000000001Z"
       end
 
       it "秒未満が異なれば異なる値になる" do
-        is_expected.not_to eq described_class.utc(2026, 8, 13, 4, 5, 6).to_hexdigest_source
+        expect(subject).not_to eq described_class.utc(2026, 8, 13, 4, 5, 6).to_hexdigest_source
       end
     end
 
@@ -52,7 +52,7 @@ RSpec.describe ::Time do
       let(:instance) { described_class.utc(2026, 8, 13, 4, 5, 6, Rational(1, 1_000_000)) }
 
       it "切り捨てられて秒ちょうどと同じ値になる" do
-        is_expected.to eq "2026-08-13T04:05:06.000000000Z"
+        expect(subject).to eq "2026-08-13T04:05:06.000000000Z"
       end
     end
 
@@ -61,7 +61,7 @@ RSpec.describe ::Time do
       let(:instance) { described_class.utc(2026, 8, 13, 4, 5, 6, Rational(1999, 2000)) }
 
       it "四捨五入ではなく切り捨てられる" do
-        is_expected.to eq "2026-08-13T04:05:06.000000999Z"
+        expect(subject).to eq "2026-08-13T04:05:06.000000999Z"
       end
     end
 
@@ -70,7 +70,7 @@ RSpec.describe ::Time do
 
       # MEMO: %Yは固定長ではないため、年の桁数がそのまま出る
       it "年の桁数がそのまま出る" do
-        is_expected.to eq "12345-01-02T03:04:05.000000000Z"
+        expect(subject).to eq "12345-01-02T03:04:05.000000000Z"
       end
     end
   end

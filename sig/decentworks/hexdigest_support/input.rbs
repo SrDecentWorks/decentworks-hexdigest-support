@@ -3,9 +3,19 @@ module Decentworks
     class NonDeterministicSourceError < ::StandardError
     end
 
+    class CircularReferenceError < ::StandardError
+    end
+
     DEFAULT_TO_S_PATTERN: ::Regexp
+
+    VISITING_KEY: ::Symbol
 
     def self.quote: (untyped value) -> ::String
     def self.validate_source!: (untyped source, untyped object) -> void
+    def self.detect_circular_reference: [T] (untyped object) { () -> T } -> T
+
+    private
+
+    def self.raise_circular_reference: (untyped object) -> void
   end
 end

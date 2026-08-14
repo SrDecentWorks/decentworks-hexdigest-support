@@ -12,7 +12,7 @@ RSpec.describe ::BigDecimal do
       let(:instance) { BigDecimal("1.5") }
 
       it "内部表記ではなく十進表記になる" do
-        is_expected.to eq "1.5"
+        expect(subject).to eq "1.5"
       end
     end
 
@@ -20,7 +20,7 @@ RSpec.describe ::BigDecimal do
       let(:instance) { BigDecimal("1.50") }
 
       it "末尾の0は落ちる" do
-        is_expected.to eq "1.5"
+        expect(subject).to eq "1.5"
       end
     end
 
@@ -28,7 +28,7 @@ RSpec.describe ::BigDecimal do
       let(:instance) { BigDecimal("1e2") }
 
       it "十進へ展開される" do
-        is_expected.to eq "100"
+        expect(subject).to eq "100"
       end
     end
 
@@ -36,7 +36,7 @@ RSpec.describe ::BigDecimal do
       let(:instance) { BigDecimal("0.12345678901234567890123456789") }
 
       it "桁が落ちない" do
-        is_expected.to eq "0.12345678901234567890123456789"
+        expect(subject).to eq "0.12345678901234567890123456789"
       end
     end
 

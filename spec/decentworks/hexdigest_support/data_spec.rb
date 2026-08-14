@@ -29,7 +29,7 @@ RSpec.describe ::Data do
       let(:instance) { coord_class.new(1, "a") }
 
       it "キーワード引数で生成したものと同じ値になる" do
-        is_expected.to eq coord_class.new(x: 1, y: "a").to_hexdigest_source
+        expect(subject).to eq coord_class.new(x: 1, y: "a").to_hexdigest_source
       end
     end
 
@@ -37,7 +37,7 @@ RSpec.describe ::Data do
       let(:instance) { described_class.define(:a, :b).new(1, 2) }
 
       it "値が同じでも異なる値になる" do
-        is_expected.not_to eq described_class.define(:x, :y).new(1, 2).to_hexdigest_source
+        expect(subject).not_to eq described_class.define(:x, :y).new(1, 2).to_hexdigest_source
       end
     end
 
@@ -46,7 +46,7 @@ RSpec.describe ::Data do
 
       # MEMO: 値の文字列表現は一致し、型識別子だけが衝突を防いでいることを明示する
       it "値は完全に一致する" do
-        is_expected.to eq ::Struct.new(:x, :y).new(1, "a").to_hexdigest_source
+        expect(subject).to eq ::Struct.new(:x, :y).new(1, "a").to_hexdigest_source
       end
     end
   end

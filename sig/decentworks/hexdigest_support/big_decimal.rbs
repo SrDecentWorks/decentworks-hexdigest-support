@@ -1,0 +1,3 @@
+class ::BigDecimal
+  include ::Decentworks::HexdigestSupport::NumericLike
+end

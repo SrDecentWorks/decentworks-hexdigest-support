@@ -1,0 +1,13 @@
+class ::Integer
+  include ::Decentworks::HexdigestSupport::NumericLike
+end
+
+class ::Rational
+  include ::Decentworks::HexdigestSupport::NumericLike
+end
+
+class ::Float
+  include ::Decentworks::HexdigestSupport::NumericLike
+
+  def to_hexdigest_rational: -> ::Rational
+end

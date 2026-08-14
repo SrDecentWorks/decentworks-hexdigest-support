@@ -12,7 +12,7 @@ RSpec.describe ::Float do
       let(:instance) { 0.1 }
 
       it "2進の厳密値ではなく十進として読まれる" do
-        is_expected.to eq Rational(1, 10)
+        expect(subject).to eq Rational(1, 10)
       end
     end
 
@@ -28,7 +28,7 @@ RSpec.describe ::Float do
       # MEMO: Float#to_sは元の値へ復元できる最短表記を返すため、誤差そのものも
       #       十進として保たれる。0.3へ丸められてしまわないことを固定しておく
       it "誤差を含んだままの十進として読まれる" do
-        is_expected.to eq Rational(30_000_000_000_000_004, 100_000_000_000_000_000)
+        expect(subject).to eq Rational(30_000_000_000_000_004, 100_000_000_000_000_000)
       end
     end
   end

@@ -9,6 +9,9 @@ gemspec
 
 gem "rake", "~> 13.0"
 
+# Steep
+gem "steep", "~> 2.0.0"
+
 # rubocop
 gem "rubocop", "~> 1.87"
 gem "rubocop-performance", "~> 1.26"
@@ -25,4 +28,4 @@ gem "simplecov", "~> 1.0.3"
 # Faker
 gem "faker", "~> 3.8"
 
-gem "activesupport", "~> 8.0"
+gem "activesupport", "~> 8.1"

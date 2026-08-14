@@ -28,7 +28,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       let(:value) { ":a" }
 
       it "引用されるため型名との境界が曖昧にならない" do
-        is_expected.to eq '":a"'
+        expect(subject).to eq '":a"'
       end
     end
 
@@ -40,7 +40,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       let(:value) { "a\nb" }
 
       it "#inspectのようにエスケープせず、そのまま含める" do
-        is_expected.to eq %("a\nb")
+        expect(subject).to eq %("a\nb")
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       let(:value) { "あ" }
 
       it "エスケープせず、そのまま含める" do
-        is_expected.to eq '"あ"'
+        expect(subject).to eq '"あ"'
       end
     end
   end
@@ -101,7 +101,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
 
     context "経路に現れていないオブジェクトの場合" do
       it "ブロックの戻り値をそのまま返す" do
-        is_expected.to eq "done"
+        expect(subject).to eq "done"
       end
     end
 
@@ -109,7 +109,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       before { described_class.detect_circular_reference(object) { nil } }
 
       it "記録が残らないため例外にならない" do
-        is_expected.to eq "done"
+        expect(subject).to eq "done"
       end
     end
 
@@ -121,7 +121,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
       end
 
       it "記録が残らないため例外にならない" do
-        is_expected.to eq "done"
+        expect(subject).to eq "done"
       end
     end
 
@@ -223,7 +223,7 @@ RSpec.describe ::Decentworks::HexdigestSupport do
     end
 
     it "Procのようにオブジェクトを独自の#to_sへ含める型も例外になる" do
-      expect { proc {}.to_hexdigest }.to raise_error described_class::NonDeterministicSourceError
+      expect { proc { }.to_hexdigest }.to raise_error described_class::NonDeterministicSourceError
     end
 
     it "無名クラス自身を値にした場合も例外になる" do
@@ -239,7 +239,12 @@ RSpec.describe ::Decentworks::HexdigestSupport do
     end
 
     it "オブジェクトIDの表記で始まる文字列は、値が同じなら同じダイジェストになる" do
+      # rubocop:disable RSpec/IdenticalEqualityAssertion
+      # 意図的に同じ表記の別インスタンスの文字列同士を比較している。
+      # オブジェクトIDの表記に見える文字列でも、内容（値）が同じなら
+      # 同じダイジェストになること（オブジェクトIDではなく値で決まること）を確認するテストのため。
       expect("#<User:0x1>".to_hexdigest).to eq "#<User:0x1>".to_hexdigest
+      # rubocop:enable RSpec/IdenticalEqualityAssertion
     end
 
     it "#to_sを実装していれば例外にならない" do
