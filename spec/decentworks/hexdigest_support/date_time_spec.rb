@@ -26,7 +26,7 @@ RSpec.describe ::DateTime do
       let(:instance) { described_class.new(2026, 8, 13, 13, 5, 6, "+09:00") }
 
       it "UTCへ変換された値になる" do
-        is_expected.to eq "2026-08-13T04:05:06.000000000Z"
+        expect(subject).to eq "2026-08-13T04:05:06.000000000Z"
       end
     end
 
@@ -34,7 +34,7 @@ RSpec.describe ::DateTime do
       let(:instance) { described_class.new(2026, 8, 13, 13, 5, Rational(6_123_456, 1_000_000), "+09:00") }
 
       it "マイクロ秒まで保持される" do
-        is_expected.to eq "2026-08-13T04:05:06.123456000Z"
+        expect(subject).to eq "2026-08-13T04:05:06.123456000Z"
       end
     end
 
@@ -42,7 +42,7 @@ RSpec.describe ::DateTime do
       let(:instance) { described_class.new(2026, 8, 13) }
 
       it "Dateの実装は継承されず、時刻を含む値になる" do
-        is_expected.not_to eq ::Date.new(2026, 8, 13).to_hexdigest_source
+        expect(subject).not_to eq ::Date.new(2026, 8, 13).to_hexdigest_source
       end
     end
   end

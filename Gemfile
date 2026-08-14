@@ -9,6 +9,9 @@ gemspec
 
 gem "rake", "~> 13.0"
 
+# Steep
+gem "steep", "~> 2.0.0"
+
 # rubocop
 gem "rubocop", "~> 1.87"
 gem "rubocop-performance", "~> 1.26"

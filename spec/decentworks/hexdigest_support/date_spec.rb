@@ -22,7 +22,7 @@ RSpec.describe ::Date do
       let(:instance) { described_class.new(2026, 1, 2) }
 
       it "ゼロ埋めされる" do
-        is_expected.to eq "2026-01-02"
+        expect(subject).to eq "2026-01-02"
       end
     end
 
@@ -38,7 +38,7 @@ RSpec.describe ::Date do
       let(:instance) { described_class.new(999, 1, 2) }
 
       it "4桁までゼロ埋めされる" do
-        is_expected.to eq "0999-01-02"
+        expect(subject).to eq "0999-01-02"
       end
     end
 
@@ -46,7 +46,7 @@ RSpec.describe ::Date do
       let(:instance) { described_class.new(12_345, 1, 2) }
 
       it "年の桁数がそのまま出る" do
-        is_expected.to eq "12345-01-02"
+        expect(subject).to eq "12345-01-02"
       end
     end
 
@@ -54,7 +54,7 @@ RSpec.describe ::Date do
       let(:instance) { described_class.new(-1, 1, 2) }
 
       it "符号が付く" do
-        is_expected.to eq "-0001-01-02"
+        expect(subject).to eq "-0001-01-02"
       end
     end
   end

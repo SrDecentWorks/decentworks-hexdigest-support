@@ -57,7 +57,7 @@ module Decentworks
         return "#{rational.numerator}/#{rational.denominator}" unless scale
 
         sign   = rational.negative? ? "-" : ""
-        digits = (rational.numerator.abs * (10**scale / rational.denominator)).to_s.rjust(scale + 1, "0")
+        digits = (rational.numerator.abs * ((10**scale) / rational.denominator)).to_s.rjust(scale + 1, "0")
 
         "#{sign}#{digits[0...-scale]}.#{digits[-scale..]}"
       end

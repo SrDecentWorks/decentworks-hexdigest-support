@@ -43,7 +43,7 @@ Gem::Specification.new do |spec|
 
   # BigDecimal への対応で必要。Ruby 3.4 以降 bigdecimal は default gem ではなく
   # bundled gem のため、依存として明示する
-  spec.add_dependency "bigdecimal", ">= 3.1"
+  spec.add_dependency "bigdecimal", "~> 4.1"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
