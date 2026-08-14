@@ -9,7 +9,11 @@
       "Read(./.env.*)",
       "Bash(rm -rf *)",
       "Bash(git push --force*)",
-      "Bash(git push -f*)"
+      "Bash(git push -f*)",
+
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
 
     "ask": [
