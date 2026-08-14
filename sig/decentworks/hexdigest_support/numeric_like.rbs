@@ -1,0 +1,19 @@
+module Decentworks
+  module HexdigestSupport
+    module NumericLike
+      def to_hexdigest_type: -> ::String
+      def to_hexdigest_source: -> ::String
+      def to_hexdigest_rational: -> ::Rational
+
+      # インクルード先（Integer / Rational / Float / BigDecimal）が備えている前提のメソッド
+      def finite?: -> bool
+      def to_r: -> ::Rational
+    end
+
+    def self.format_rational: (::Rational rational) -> ::String
+
+    private
+
+    def self.decimal_scale: (::Integer denominator) -> ::Integer?
+  end
+end

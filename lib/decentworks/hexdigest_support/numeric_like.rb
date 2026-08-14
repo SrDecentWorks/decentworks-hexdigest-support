@@ -56,8 +56,16 @@ module Decentworks
         scale = decimal_scale(rational.denominator)
         return "#{rational.numerator}/#{rational.denominator}" unless scale
 
-        sign   = rational.negative? ? "-" : ""
-        digits = (rational.numerator.abs * ((10**scale) / rational.denominator)).to_s.rjust(scale + 1, "0")
+        sign = rational.negative? ? "-" : ""
+
+        # MEMO: 10**scaleではなく10.powを使う。Integer#**はIntegerを渡しても
+        #       戻り値の型がNumericに広がってしまい、直後の演算の型検査が通らないため
+        #
+        # MEMO: 除算の結果をSteepの型注釈（#:）で::Integerへ明示している。scale・denominatorは
+        #       ともにIntegerで実際の商も必ずIntegerになるが、Integer#/の戻り値がオーバーロード解決の
+        #       都合で一意に絞り込まれず、後続の掛け算が型検査を通らないため
+        quotient = (10.pow(scale) / rational.denominator) #: ::Integer
+        digits   = (rational.numerator.abs * quotient).to_s.rjust(scale + 1, "0")
 
         "#{sign}#{digits[0...-scale]}.#{digits[-scale..]}"
       end

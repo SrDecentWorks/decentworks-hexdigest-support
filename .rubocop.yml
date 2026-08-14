@@ -126,6 +126,10 @@ Style/RescueStandardError:
   Enabled: true
   EnforcedStyle: implicit
 
+# Steepの型注釈コメント（例: `key #: ::Object`）を通常のコメントと区別する
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
 # fail と使い分ける必要ナシ
 Style/SignalException:
   Enabled: true
