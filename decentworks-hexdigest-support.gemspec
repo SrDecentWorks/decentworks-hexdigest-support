@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Hash値拡張ライブラリ"
   spec.description = "Hash値拡張ライブラリ"
-  spec.homepage = "https://github.com/SrDecentWorks/decentworks-hexdigest-support/tree/main"
+  spec.homepage = "https://github.com/SrDecentWorks/decentworks-hexdigest-support"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 4.0.0"
 
