@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
 
   # ActiveSupport::TimeWithZone への対応で必要。Rails 上では同じ瞬間が Time ではなく
   # TimeWithZone として現れるため、条件付き対応ではなく依存として扱う
-  spec.add_dependency "activesupport", ">= 8.0"
+  spec.add_dependency "activesupport", "~> 8.1"
 
   # BigDecimal への対応で必要。Ruby 3.4 以降 bigdecimal は default gem ではなく
   # bundled gem のため、依存として明示する
