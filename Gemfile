@@ -29,3 +29,6 @@ gem "simplecov", "~> 1.0.3"
 gem "faker", "~> 3.8"
 
 gem "activesupport", "~> 8.1"
+
+# 依存gemの既知脆弱性チェック（CIのbundler-auditで使用）
+gem "bundler-audit", "~> 0.9"

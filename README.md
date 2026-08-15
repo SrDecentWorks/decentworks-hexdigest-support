@@ -1,5 +1,11 @@
 # Decentworks::HexdigestSupport
 
+[![RSpec](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/rspec.yml/badge.svg)](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/rspec.yml)
+[![RuboCop](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/rubocop.yml/badge.svg)](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/rubocop.yml)
+[![Steep](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/steep.yml/badge.svg)](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/steep.yml)
+[![Bundler Audit](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/bundler-audit.yml/badge.svg)](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/bundler-audit.yml)
+[![Build](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/build.yml/badge.svg)](https://github.com/SrDecentWorks/decentworks-hexdigest-support/actions/workflows/build.yml)
+
 > [!IMPORTANT]
 > 本ライブラリは個人によって開発・保守されています。予告なく仕様変更または提供を終了する場合があります。ご利用にあたってはバージョンを固定のうえ、更新時は変更内容をご確認ください。
 
