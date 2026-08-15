@@ -1,0 +1,13 @@
+module Decentworks
+  module HexdigestSupport
+    module Generators
+      class InstallGenerator < ::Rails::Generators::Base
+        def create_initializer_file: -> untyped
+
+        private
+
+        def salt_key: -> untyped
+      end
+    end
+  end
+end

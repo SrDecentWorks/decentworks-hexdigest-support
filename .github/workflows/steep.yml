@@ -1,0 +1,24 @@
+name: Steep
+
+on:
+  push:
+
+jobs:
+  steep:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Install RBS collection
+        run: bundle exec rbs collection install
+
+      - name: Run Steep
+        run: bundle exec steep check
