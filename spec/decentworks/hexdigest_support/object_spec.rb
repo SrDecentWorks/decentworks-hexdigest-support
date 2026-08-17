@@ -152,6 +152,36 @@ RSpec.describe ::Object do
         expect(klass.new("k").to_hexdigest).not_to eq klass.new("other").to_hexdigest
       end
     end
+
+    context "型の異なる別クラスが同じto_hexdigest_sourceを返す場合" do
+      # MEMO: 独自クラスはトップレベルに定義せず、stub_constでテストケースごとに
+      #       定義・自動復元する。他ファイルとの名前衝突やグローバル汚染を避けるため
+      before do
+        stub_const("SameSourceA", Class.new do
+          def to_hexdigest_source = {hoge: "hoge", fuga: "fuga"}.to_hexdigest
+        end)
+
+        stub_const("SameSourceB", Class.new do
+          def to_hexdigest_source = {hoge: "hoge", fuga: "fuga"}.to_hexdigest
+        end)
+      end
+
+      let(:instance_a) { ::SameSourceA.new }
+      let(:instance_b) { ::SameSourceB.new }
+
+      it "to_hexdigest_sourceの戻り値自体は一致する" do
+        expect(instance_a.to_hexdigest_source).to eq instance_b.to_hexdigest_source
+      end
+
+      it "to_hexdigest_typeが異なるためto_hexdigest_inputは一致しない" do
+        expect(instance_a.to_hexdigest_type).not_to eq instance_b.to_hexdigest_type
+        expect(instance_a.to_hexdigest_input).not_to eq instance_b.to_hexdigest_input
+      end
+
+      it "結果としてto_hexdigestも一致しない" do
+        expect(instance_a.to_hexdigest).not_to eq instance_b.to_hexdigest
+      end
+    end
   end
 
   describe "#to_hexdigest_type" do
