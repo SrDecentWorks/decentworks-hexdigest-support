@@ -158,11 +158,11 @@ RSpec.describe ::Object do
       #       定義・自動復元する。他ファイルとの名前衝突やグローバル汚染を避けるため
       before do
         stub_const("SameSourceA", Class.new do
-          def to_hexdigest_source = {hoge: "hoge", fuga: "fuga"}.to_hexdigest
+          def to_hexdigest_source = { hoge: "hoge", fuga: "fuga" }.to_hexdigest
         end)
 
         stub_const("SameSourceB", Class.new do
-          def to_hexdigest_source = {hoge: "hoge", fuga: "fuga"}.to_hexdigest
+          def to_hexdigest_source = { hoge: "hoge", fuga: "fuga" }.to_hexdigest
         end)
       end
 
