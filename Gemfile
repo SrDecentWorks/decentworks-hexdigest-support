@@ -9,6 +9,9 @@ gemspec
 
 gem "rake", "~> 13.0"
 
+# bin/console用（Ruby 4.0以降は標準ライブラリから外れたため明示的に追加）
+gem "irb"
+
 # Steep
 gem "steep", "~> 2.0.0"
 
