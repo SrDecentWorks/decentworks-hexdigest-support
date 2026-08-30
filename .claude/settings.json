@@ -29,11 +29,19 @@
     "allow": [
       "Bash(bundle exec rspec*)",
       "Bash(bundle exec rubocop*)",
+      "Bash(bundle exec steep check*)",
       "Bash(bundle exec rake)",
+      "Bash(bundle exec rake spec*)",
+      "Bash(bundle exec rake rubocop*)",
+      "Bash(bundle exec rake steep*)",
 
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
+
+      "Bash(git --no-optional-locks status*)",
+      "Bash(git --no-optional-locks diff*)",
+      "Bash(git --no-optional-locks log*)",
       "Bash(git switch*)",
       "Bash(git stash*)",
 
@@ -74,6 +82,7 @@
   },
 
   "env": {
-    "GIT_OPTIONAL_LOCKS": "0"
+    "GIT_OPTIONAL_LOCKS": "0",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   }
 }
